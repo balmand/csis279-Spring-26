@@ -9,10 +9,16 @@ const ClientForm = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log(id);  
     if (id) {
-      getClient(id).then(setForm);
+      loadClient(id);
     }
   }, [id]);
+
+  const loadClient = async(id) =>{
+    const data = await getClient(id);
+    setForm({name: data.client_name, email:data.client_email});
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

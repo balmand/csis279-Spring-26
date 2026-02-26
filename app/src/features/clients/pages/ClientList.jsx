@@ -36,12 +36,12 @@ const ClientList = () => {
     <Paper sx={{ p: 3 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <Typography variant="h5">Client List</Typography>
-        <Button component={Link} variant="contained" to="/clients/new">
-          Create
-        </Button>
       </Stack>
 
       <Box sx={{ overflowX: 'auto' }}>
+        <Button component={Link} variant="contained" to="/clients/new">
+          Create
+        </Button>
         <Table size="small">
           <TableHead>
             <TableRow>

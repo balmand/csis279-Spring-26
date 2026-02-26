@@ -8,8 +8,7 @@ export const getClients = async () => {
 
 export const getClient = async(id) =>{
     const res = await fetch(`${BASE}/${id}`);
-    console.log(res);
-    const data = await res.json;
+    const data = await res.json();
     return data;
 }
 
