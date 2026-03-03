@@ -1,7 +1,8 @@
 import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
-const links = [
+const navLinks = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/clients', label: 'Clients' },
@@ -9,14 +10,22 @@ const links = [
 ];
 
 const NavBar = () => {
+  const { client, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    signOut();
+    navigate('/');
+  };
+
   return (
     <AppBar position="static" sx={{ mb: 3 }}>
       <Toolbar>
         <Typography variant="h6" sx={{ mr: 3 }}>
           CSIS279 App
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-          {links.map((link) => (
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flexGrow: 1 }}>
+          {client && navLinks.map((link) => (
             <Button
               key={link.to}
               color="inherit"
@@ -27,6 +36,29 @@ const NavBar = () => {
               {link.label}
             </Button>
           ))}
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+          {client ? (
+            <>
+              <Typography variant="body2" sx={{ color: 'inherit', opacity: 0.85 }}>
+                {client.client_name}
+              </Typography>
+              <Button color="inherit" onClick={handleSignOut}>
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button color="inherit" component={NavLink} to="/login"
+                sx={{ '&.active': { textDecoration: 'underline' } }}>
+                Login
+              </Button>
+              <Button color="inherit" component={NavLink} to="/register"
+                sx={{ '&.active': { textDecoration: 'underline' } }}>
+                Register
+              </Button>
+            </>
+          )}
         </Box>
       </Toolbar>
     </AppBar>
