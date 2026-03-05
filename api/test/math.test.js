@@ -9,3 +9,7 @@ test('adds two numbers', () =>{
 test('multiply two numbers', () =>{
     assert.strictEqual(multiply(1, 1), 1);
 })
+
+test('multiply two numbers,,,', () =>{
+    assert.strictEqual(multiply(1, 1), 1);
+})
