@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3001";
+const BASE_URL = process.env.BASE_URL;
 
 export const api = async (endpoint, options = {}) => {
     const res = await fetch(
