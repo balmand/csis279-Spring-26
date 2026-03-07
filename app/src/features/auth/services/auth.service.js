@@ -1,4 +1,4 @@
-const BASE = "http://localhost:3001/auth";
+const BASE = process.env.AUTH_URL;
 
 export const login = async ({ client_email, password }) => {
     const res = await fetch(`${BASE}/login`, {

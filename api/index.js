@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config();
 const bodyParser = require('body-parser');
 // security package
 const cors = require('cors');
@@ -14,12 +15,11 @@ app.use(cors());
 
 app.use(bodyParser.json());
 
-
 const pool = new Pool({
-	user: "postgres",
-	password: "postgres",
-	database: "csis_279_spring_26_db",
-	port: 5432,
+	user: process.env.DB_USER,
+	password: process.env.DB_PASSWORD,
+	database: process.env.DB_NAME,
+	port: process.env.DB_PORT,
 });
 
 // AUtH
@@ -184,7 +184,7 @@ app.delete("/departments/:id", async (req, res) => {
 	res.status(204).json({success: true});
 });
 
-const PORT = 3001;
+const PORT = process.env.SERVER_PORT;
 app.listen(PORT, ()=>{
     console.log(`Server running on ${PORT}`)
 });
