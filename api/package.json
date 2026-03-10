@@ -1,0 +1,19 @@
+{
+  "name": "csis279-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+	  "dev": "nodemon index.js",
+    "test": "jest"
+    
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "pg": "^8.17.2"
+  }
+}
