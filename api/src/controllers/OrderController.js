@@ -9,7 +9,14 @@ class OrderController {
             next(err);
         }
     }
-
+    static async getByCustomerId(req, res, next) {
+        try {
+            const orders = await OrderService.getByCustomerId(req.params.customer_id);
+            return res.json(orders);
+        } catch (err) {
+            next(err);
+        }
+    }
     static async getById(req, res, next) {
         try {
             const order = await OrderService.getById(req.params.id);
