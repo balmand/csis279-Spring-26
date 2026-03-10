@@ -1,7 +1,6 @@
--- ============================================================
--- CSIS 279 Spring 2026 — Database Setup
--- Run this file in pgAdmin Query Tool against your database.
--- ============================================================
+
+
+
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -11,9 +10,9 @@ SET check_function_bodies = false;
 SET client_min_messages = warning;
 SET row_security = off;
 
--- ------------------------------------------------------------
--- Drop existing tables (reverse dependency order)
--- ------------------------------------------------------------
+
+
+
 
 DROP TABLE IF EXISTS public.transactions CASCADE;
 DROP TABLE IF EXISTS public.stock_adjustments CASCADE;
@@ -24,9 +23,7 @@ DROP TABLE IF EXISTS public.products CASCADE;
 DROP TABLE IF EXISTS public.clients CASCADE;
 DROP TABLE IF EXISTS public.departments CASCADE;
 
--- ------------------------------------------------------------
--- clients
--- ------------------------------------------------------------
+
 
 CREATE TABLE public.clients (
     client_id     SERIAL PRIMARY KEY,
@@ -38,9 +35,7 @@ CREATE TABLE public.clients (
     updated_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
--- ------------------------------------------------------------
--- departments
--- ------------------------------------------------------------
+
 
 CREATE TABLE public.departments (
     dep_id    SERIAL PRIMARY KEY,
@@ -49,9 +44,7 @@ CREATE TABLE public.departments (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- ------------------------------------------------------------
--- products (catalog)
--- ------------------------------------------------------------
+
 
 CREATE TABLE public.products (
     product_id          SERIAL PRIMARY KEY,
@@ -63,9 +56,7 @@ CREATE TABLE public.products (
     updated_at          TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- ------------------------------------------------------------
--- items (inventory / SKUs)
--- ------------------------------------------------------------
+
 
 CREATE TABLE public.items (
     item_id        SERIAL PRIMARY KEY,
@@ -78,9 +69,8 @@ CREATE TABLE public.items (
     updated_at     TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 
--- ------------------------------------------------------------
--- orders
--- ------------------------------------------------------------
+
+
 
 CREATE TABLE public.orders (
     order_id     SERIAL PRIMARY KEY,
@@ -93,9 +83,9 @@ CREATE TABLE public.orders (
     updated_at   TIMESTAMPTZ    NOT NULL DEFAULT NOW()
 );
 
--- ------------------------------------------------------------
--- order_items (line items in an order)
--- ------------------------------------------------------------
+
+
+
 
 CREATE TABLE public.order_items (
     order_item_id SERIAL PRIMARY KEY,
@@ -105,9 +95,8 @@ CREATE TABLE public.order_items (
     unit_price    NUMERIC(10,2)  NOT NULL
 );
 
--- ------------------------------------------------------------
--- stock_adjustments (audit trail for inventory changes)
--- ------------------------------------------------------------
+
+
 
 CREATE TABLE public.stock_adjustments (
     adjustment_id  SERIAL PRIMARY KEY,
@@ -119,9 +108,8 @@ CREATE TABLE public.stock_adjustments (
     created_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
--- ------------------------------------------------------------
--- transactions (financial records tied to orders)
--- ------------------------------------------------------------
+
+
 
 CREATE TABLE public.transactions (
     transaction_id   SERIAL PRIMARY KEY,
@@ -131,9 +119,9 @@ CREATE TABLE public.transactions (
     created_at       TIMESTAMPTZ    NOT NULL DEFAULT NOW()
 );
 
--- ============================================================
--- Indexes (Task 4 — Query Hotspots)
--- ============================================================
+
+
+
 
 CREATE INDEX idx_clients_email              ON public.clients(client_email);
 CREATE INDEX idx_orders_status              ON public.orders(order_status);
@@ -146,62 +134,60 @@ CREATE INDEX idx_stock_adj_item_id          ON public.stock_adjustments(item_id)
 CREATE INDEX idx_transactions_order_id      ON public.transactions(order_id);
 CREATE INDEX idx_transactions_created_at    ON public.transactions(created_at);
 
--- ============================================================
--- Seed Data
--- ============================================================
 
--- clients (password = "password", bcrypt salt 10)
+
+
+
+
 INSERT INTO public.clients (client_id, client_name, client_email, client_dob, password_hash) VALUES
 (1, 'alice smith',  'alice.smith@balamand.com', '2000-01-01', '$2b$10$4B7xZOMXYURgWfMDUpR9iOny5ob5Z4w.pI71k1qtyGDyw.F3ugrmS'),
 (2, 'john smith 1', 'john.smith@balamand.edu',  '2001-01-01', '$2b$10$xR3cc2rUT2g9XL7D/rZZf.B3CNzH4aFwRVNnfu95EOwwerDLq.cfq');
 
--- departments
+
 INSERT INTO public.departments (dep_id, dep_name) VALUES
 (1, 'Information Technology'),
 (2, 'SALE'),
 (3, 'HR'),
 (9, 'dfd');
 
--- products
+
 INSERT INTO public.products (product_id, product_name, product_description, category, is_active) VALUES
 (1, 'Wireless Mouse',    'Ergonomic wireless mouse',       'Electronics', TRUE),
 (2, 'Mechanical Keyboard','RGB mechanical keyboard',        'Electronics', TRUE),
 (3, 'USB-C Hub',         '7-in-1 USB-C docking station',   'Accessories', TRUE);
 
--- items (inventory)
+
 INSERT INTO public.items (item_id, product_id, item_name, item_sku, unit_price, stock_quantity) VALUES
 (1, 1, 'Wireless Mouse - Black',     'WM-BLK-001', 29.99, 150),
 (2, 1, 'Wireless Mouse - White',     'WM-WHT-002', 29.99, 80),
 (3, 2, 'Mech Keyboard - Red Switch', 'KB-RED-001', 89.99, 45),
 (4, 3, 'USB-C Hub 7-in-1',           'HUB-7IN1-001', 49.99, 200);
 
--- orders
+
 INSERT INTO public.orders (order_id, client_id, order_date, order_total, order_status) VALUES
 (1, 1, '2026-01-15', 149.97, 'completed'),
 (2, 1, '2026-02-10', 59.98,  'pending'),
 (3, 2, '2026-02-20', 89.99,  'completed');
 
--- order_items
+
 INSERT INTO public.order_items (order_item_id, order_id, item_id, quantity, unit_price) VALUES
 (1, 1, 1, 2, 29.99),
 (2, 1, 3, 1, 89.99),
 (3, 2, 2, 2, 29.99),
 (4, 3, 3, 1, 89.99);
 
--- stock_adjustments
+
 INSERT INTO public.stock_adjustments (adjustment_id, item_id, quantity_change, reason, reference_type, reference_id) VALUES
 (1, 1, -2, 'Order completed', 'order', 1),
 (2, 3, -1, 'Order completed', 'order', 1),
 (3, 3, -1, 'Order completed', 'order', 3);
 
--- transactions
+
 INSERT INTO public.transactions (transaction_id, order_id, amount, transaction_type) VALUES
 (1, 1, 149.97, 'payment'),
 (2, 3, 89.99,  'payment');
 
--- ============================================================
--- Reset sequences
--- ============================================================
+
 
 SELECT setval('public.clients_client_id_seq',        10, true);
 SELECT setval('public.departments_dep_id_seq',        9, true);
@@ -212,8 +198,6 @@ SELECT setval('public.order_items_order_item_id_seq',10, true);
 SELECT setval('public.stock_adjustments_adjustment_id_seq', 10, true);
 SELECT setval('public.transactions_transaction_id_seq',     10, true);
 
--- ============================================================
--- Setup complete.
--- ============================================================
+
 
 
