@@ -197,7 +197,7 @@ SELECT setval('public.orders_order_id_seq',          10, true);
 SELECT setval('public.order_items_order_item_id_seq',10, true);
 SELECT setval('public.stock_adjustments_adjustment_id_seq', 10, true);
 SELECT setval('public.transactions_transaction_id_seq',     10, true);
-
+cd
 
 
 
