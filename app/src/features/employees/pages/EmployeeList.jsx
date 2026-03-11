@@ -13,14 +13,23 @@ import {
   Typography,
 } from '@mui/material';
 import { getEmployees, deleteEmployee } from '../services/employees.service';
-
+import { getDepartments } from '../../departments/services/departments.service';
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
-
+  const [departments, setDepartments] = useState([]);
   useEffect(() => {
     loadEmployees();
+    loadDepartments();
   }, []);
 
+   const loadDepartments = async () => {
+    try {
+        const deptData = await getDepartments();
+        setDepartments(deptData);
+      } catch (err) {
+        console.error("Failed to load departments", err);
+      }
+  };
   const loadEmployees = async () => {
     const employees = await getEmployees();
     console.log(employees);
@@ -30,6 +39,11 @@ const EmployeeList = () => {
   const remove = async (id) => {
     await deleteEmployee(id);
     loadEmployees();
+  };
+
+  const getDepartmentName = (id) => {
+    const dept = departments.find(d => d.dep_id === parseInt(id));
+    return dept ? dept.dep_name : 'Unknown Error...';
   };
 
   return (
@@ -59,7 +73,7 @@ const EmployeeList = () => {
               <TableCell>{e.employee_email}</TableCell>
               <TableCell>{e.employee_role}</TableCell>
               <TableCell>{moment(e.employee_dob).format('YYYY-MM-DD')}</TableCell>
-              <TableCell>{e.employee_department}</TableCell>
+              <TableCell>{getDepartmentName(e.employee_department)}</TableCell>
               <TableCell>
                 <Stack direction="row" spacing={1}>
                   <Button component={Link} to={`/employees/${e.employee_id}/edit`} variant="outlined" size="small">
