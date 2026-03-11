@@ -6,8 +6,8 @@ const TransactionRepository = require('../repositories/TransactionRepository');
 const ApiError = require('../middlewares/ApiError');
 
 class OrderService {
-    static async getAll() {
-        return OrderRepository.findAll();
+    static async getAll(query = {}) {
+        return OrderRepository.findAll(query);
     }
 
     static async getById(id) {
