@@ -6,7 +6,7 @@ const router = Router();
 
 router.get('/', EmployeeController.getAll);
 router.get('/:id', EmployeeController.getById);
-router.post('/', employeeRules, EmployeeController.create);
+router.post('/', EmployeeController.create);
 router.put('/:id', employeeRules, EmployeeController.update);
 router.delete('/:id', EmployeeController.remove);
 

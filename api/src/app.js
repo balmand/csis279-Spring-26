@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const clientRoutes = require('./routes/clientRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const productRoutes = require('./routes/productRoutes');
+const employeeRoutes = require('./routes/employeeRoutes');
 const itemRoutes = require('./routes/itemRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const stockRoutes = require('./routes/stockRoutes');
@@ -28,6 +29,7 @@ app.use('/items', itemRoutes);
 app.use('/orders', orderRoutes);
 app.use('/stock-adjustments', stockRoutes);
 app.use('/transactions', transactionRoutes);
+app.use('/employees', employeeRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

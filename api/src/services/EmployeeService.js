@@ -4,6 +4,7 @@ const ApiError = require('../middlewares/ApiError');
 class EmployeeService {
 
     static async getAll() {
+
         return EmployeeRepository.getAll();
     }
 
@@ -15,20 +16,25 @@ class EmployeeService {
         return employee;
     }
 
-    static async create({ name, email, role}) {
+    static async create({ employee_name, employee_email, employee_role, employee_dob, employee_department}) {
+        
         return await EmployeeRepository.create({ 
-            employee_name: name,
-            employee_email: email,
-            employee_role: role
+            employee_name,
+            employee_email,
+            employee_role,
+            employee_dob,
+            employee_department
         });
 
     }
 
-    static async update(id, { name, email, role }) {
+    static async update(id, { employee_name, employee_email, employee_role, employee_dob, employee_department }) {
         const employee = await EmployeeRepository.update(id, {
-            employee_name: name,
-            employee_email: email,
-            employee_role: role
+            employee_name,
+            employee_email,
+            employee_role,
+            employee_dob,
+            employee_department
         });
         if (!employee) {
             throw ApiError.notFound(`Employee with id ${id} was not found.`);
@@ -45,3 +51,5 @@ class EmployeeService {
         console.log(employee_deleted); // <-- Future testing. Just in case.
     }
 }
+
+module.exports = EmployeeService;
