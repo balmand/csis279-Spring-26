@@ -12,6 +12,10 @@ const navLinks = [
 const NavBar = () => {
   const { client, signOut } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = client?.role === 'admin';
+  const links = isAdmin
+    ? [...navLinks, { to: '/admin/statistics', label: 'Sales Stats' }]
+    : navLinks;
 
   const handleSignOut = () => {
     signOut();
@@ -25,7 +29,7 @@ const NavBar = () => {
           CSIS279 App
         </Typography>
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flexGrow: 1 }}>
-          {client && navLinks.map((link) => (
+          {client && links.map((link) => (
             <Button
               key={link.to}
               color="inherit"

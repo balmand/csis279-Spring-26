@@ -10,6 +10,7 @@ const itemRoutes = require('./routes/itemRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const stockRoutes = require('./routes/stockRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
+const statisticsRoutes = require('./routes/statisticsRoutes');
 
 const notFound = require('./middlewares/notFound');
 const errorHandler = require('./middlewares/errorHandler');
@@ -28,6 +29,7 @@ app.use('/items', itemRoutes);
 app.use('/orders', orderRoutes);
 app.use('/stock-adjustments', stockRoutes);
 app.use('/transactions', transactionRoutes);
+app.use('/statistics', statisticsRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

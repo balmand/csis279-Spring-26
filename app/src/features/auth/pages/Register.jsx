@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { Alert, Button, Link, Paper, Stack, TextField, Typography, Box } from '@mui/material';
+import { Alert, Button, Link, MenuItem, Paper, Stack, TextField, Typography, Box } from '@mui/material';
 import { register } from '../services/auth.service';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -9,6 +9,7 @@ const Register = () => {
         client_name: '',
         client_email: '',
         client_dob: '',
+        role: 'customer',
         password: '',
     });
     const [error, setError] = useState('');
@@ -63,6 +64,19 @@ const Register = () => {
                         InputLabelProps={{ shrink: true }}
                         fullWidth
                     />
+                    <TextField
+                        select
+                        label="Role"
+                        name="role"
+                        value={form.role}
+                        onChange={handleChange}
+                        required
+                        fullWidth
+                    >
+                        <MenuItem value="customer">Customer</MenuItem>
+                        <MenuItem value="employee">Employee</MenuItem>
+                        <MenuItem value="admin">Admin</MenuItem>
+                    </TextField>
                     <TextField
                         label="Password"
                         name="password"
