@@ -97,6 +97,7 @@ class OrderService {
             item_id,
             quantity,
             unit_price: item.unit_price,
+            unit_cost: item.unit_cost || 0,
         });
 
         // Recalculate total

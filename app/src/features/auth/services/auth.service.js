@@ -10,11 +10,11 @@ export const login = async ({ client_email, password }) => {
     return { ok: res.ok, status: res.status, data };
 };
 
-export const register = async ({ client_name, client_email, client_dob, password }) => {
+export const register = async ({ client_name, client_email, client_dob, password, role }) => {
     const res = await fetch(`${BASE}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ client_name, client_email, client_dob, password }),
+        body: JSON.stringify({ client_name, client_email, client_dob, password, role }),
     });
     const data = await res.json();
     return { ok: res.ok, status: res.status, data };
