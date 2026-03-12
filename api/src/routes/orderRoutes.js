@@ -6,6 +6,7 @@ const router = Router();
 
 router.get('/', OrderController.getAll);
 router.get('/:id', OrderController.getById);
+router.get('/customer/:customer_id', OrderController.getByCustomerId);
 router.post('/', orderRules, OrderController.create);
 router.put('/:id', orderRules, OrderController.update);
 router.post('/:id/complete', OrderController.complete);

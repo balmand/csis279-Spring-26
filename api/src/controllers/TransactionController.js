@@ -3,7 +3,7 @@ const TransactionService = require('../services/TransactionService');
 class TransactionController {
     static async getAll(req, res, next) {
         try {
-            const transactions = await TransactionService.getAll();
+            const transactions = await TransactionService.getAll(req.query);
             return res.json(transactions);
         } catch (err) {
             next(err);

@@ -12,6 +12,7 @@ class AuthController {
 
     static async login(req, res, next) {
         try {
+            console.log("reached")
             const client = await AuthService.login(req.body);
             return res.json({ authenticated: true, client });
         } catch (err) {

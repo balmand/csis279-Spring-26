@@ -1,11 +1,28 @@
 const pool = require('../config/db');
 
 class ItemRepository {
-    static async findAll() {
+    static async findAll({ page = 1, limit = 10, sortBy = 'item_id', sortDir = 'ASC' } = {}) {
+        const offset = (page - 1) * limit;
+        const validSortCols = ['item_id', 'product_id', 'item_name', 'item_sku', 'unit_price', 'stock_quantity', 'created_at', 'updated_at'];
+        const validSortDirs = ['ASC', 'DESC'];
+        
+        const sortColumn = validSortCols.includes(sortBy) ? sortBy : 'item_id';
+        const sortDirection = validSortDirs.includes(sortDir.toUpperCase()) ? sortDir.toUpperCase() : 'ASC';
+
+        const countResult = await pool.query('SELECT COUNT(*) FROM items');
+        const total = parseInt(countResult.rows[0].count, 10);
+
         const result = await pool.query(
-            'SELECT * FROM items ORDER BY item_id ASC'
+            `SELECT * FROM items ORDER BY ${sortColumn} ${sortDirection} LIMIT $1 OFFSET $2`,
+            [limit, offset]
         );
-        return result.rows;
+
+        return {
+            data: result.rows,
+            total,
+            page: parseInt(page, 10),
+            limit: parseInt(limit, 10)
+        };
     }
 
     static async findById(id) {
@@ -22,22 +39,27 @@ class ItemRepository {
         return result.rows[0] || null;
     }
 
-    static async create({ product_id, item_name, item_sku, unit_price, stock_quantity }) {
+    static async create({ product_id, item_name, item_sku, unit_price, unit_cost, stock_quantity }) {
         const result = await pool.query(
-            `INSERT INTO items (product_id, item_name, item_sku, unit_price, stock_quantity)
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [product_id || null, item_name, item_sku, unit_price, stock_quantity || 0]
+            `INSERT INTO items (product_id, item_name, item_sku, unit_price, unit_cost, stock_quantity)
+             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+            [product_id || null, item_name, item_sku, unit_price, unit_cost || 0, stock_quantity || 0]
         );
         return result.rows[0];
     }
 
-    static async update(id, { product_id, item_name, item_sku, unit_price, stock_quantity }) {
+    static async update(id, { product_id, item_name, item_sku, unit_price, unit_cost, stock_quantity }) {
         const result = await pool.query(
             `UPDATE items
-             SET product_id = $1, item_name = $2, item_sku = $3,
-                 unit_price = $4, stock_quantity = $5, updated_at = NOW()
-             WHERE item_id = $6 RETURNING *`,
-            [product_id, item_name, item_sku, unit_price, stock_quantity, id]
+             SET product_id = COALESCE($1, product_id),
+                 item_name = COALESCE($2, item_name),
+                 item_sku = COALESCE($3, item_sku),
+                 unit_price = COALESCE($4, unit_price),
+                 unit_cost = COALESCE($5, unit_cost),
+                 stock_quantity = COALESCE($6, stock_quantity),
+                 updated_at = NOW()
+             WHERE item_id = $7 RETURNING *`,
+            [product_id ?? null, item_name ?? null, item_sku ?? null, unit_price ?? null, unit_cost ?? null, stock_quantity ?? null, id]
         );
         return result.rows[0] || null;
     }
