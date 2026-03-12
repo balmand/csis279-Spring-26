@@ -3,11 +3,11 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const navLinks = [
-  { to: "/", label: "Home" },
-  { to: "/about", label: "About" },
-  { to: "/clients", label: "Clients" },
-  { to: "/departments", label: "Departments" },
-  { to: "/orders", label: "Orders" },
+  { to: '/', label: 'Home' },
+  { to: '/about', label: 'About' },
+  { to: '/clients', label: 'Clients' },
+  { to: '/departments', label: 'Departments' },
+  { to: '/employees', label: 'Employees'}
 ];
 
 const NavBar = () => {

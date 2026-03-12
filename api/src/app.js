@@ -2,15 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 
-const authRoutes = require("./routes/authRoutes");
-const clientRoutes = require("./routes/clientRoutes");
-const departmentRoutes = require("./routes/departmentRoutes");
-const productRoutes = require("./routes/productRoutes");
-const itemRoutes = require("./routes/itemRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const stockRoutes = require("./routes/stockRoutes");
-const transactionRoutes = require("./routes/transactionRoutes");
-const orderItemRoutes = require("./routes/orderItemRoutes");
+const authRoutes = require('./routes/authRoutes');
+const clientRoutes = require('./routes/clientRoutes');
+const departmentRoutes = require('./routes/departmentRoutes');
+const productRoutes = require('./routes/productRoutes');
+const employeeRoutes = require('./routes/employeeRoutes');
+const itemRoutes = require('./routes/itemRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const stockRoutes = require('./routes/stockRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
 
 const notFound = require("./middlewares/notFound");
 const errorHandler = require("./middlewares/errorHandler");
@@ -21,15 +21,15 @@ app.use(cors());
 app.use(bodyParser.json());
 
 /* ── Routes ── */
-app.use("/auth", authRoutes);
-app.use("/clients", clientRoutes);
-app.use("/departments", departmentRoutes);
-app.use("/products", productRoutes);
-app.use("/items", itemRoutes);
-app.use("/orders", orderRoutes);
-app.use("/order-items", orderItemRoutes);
-app.use("/stock-adjustments", stockRoutes);
-app.use("/transactions", transactionRoutes);
+app.use('/auth', authRoutes);
+app.use('/clients', clientRoutes);
+app.use('/departments', departmentRoutes);
+app.use('/products', productRoutes);
+app.use('/items', itemRoutes);
+app.use('/orders', orderRoutes);
+app.use('/stock-adjustments', stockRoutes);
+app.use('/transactions', transactionRoutes);
+app.use('/employees', employeeRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
