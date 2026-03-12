@@ -64,7 +64,7 @@ class ItemRepository {
         return result.rows[0] || null;
     }
 
-    static async adjustStock(id, quantityChange, client) {
+    static async adjustStock(id, quantityChange) {
         const result = await pool.query(
             `UPDATE items SET stock_quantity = stock_quantity + $1, updated_at = NOW()
              WHERE item_id = $2 RETURNING *`,
