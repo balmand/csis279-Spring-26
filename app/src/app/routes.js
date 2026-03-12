@@ -6,6 +6,7 @@ import DepartmentList from "../features/departments/pages/DepartmentList";
 import DepartmentForm from "../features/departments/pages/DepartmentForm";
 import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
+import SalesStatisticsPage from "../features/statistics/pages/SalesStatisticsPage";
 
 export const routes = [
     {path: "/", element: Home},
@@ -16,6 +17,7 @@ export const routes = [
     {path: "/departments", element: DepartmentList},
     {path: "/departments/new", element: DepartmentForm},
     {path: "/departments/:id/edit", element: DepartmentForm},
+    {path: "/admin/statistics", element: SalesStatisticsPage},
     {path: "/login", element: Login},
     {path: "/register", element: Register},
 ];
