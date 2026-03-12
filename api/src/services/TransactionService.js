@@ -1,8 +1,8 @@
 const TransactionRepository = require('../repositories/TransactionRepository');
 
 class TransactionService {
-    static async getAll() {
-        return TransactionRepository.findAll();
+    static async getAll(query = {}) {
+        return TransactionRepository.findAll(query);
     }
 
     static async getByOrderId(orderId) {

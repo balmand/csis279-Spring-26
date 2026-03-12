@@ -1,11 +1,28 @@
 const pool = require('../config/db');
 
 class OrderRepository {
-    static async findAll() {
+    static async findAll({ page = 1, limit = 10, sortBy = 'order_id', sortDir = 'ASC' } = {}) {
+        const offset = (page - 1) * limit;
+        const validSortCols = ['order_id', 'client_id', 'order_date', 'order_total', 'order_status', 'completed_at', 'created_at', 'updated_at'];
+        const validSortDirs = ['ASC', 'DESC'];
+        
+        const sortColumn = validSortCols.includes(sortBy) ? sortBy : 'order_id';
+        const sortDirection = validSortDirs.includes(sortDir.toUpperCase()) ? sortDir.toUpperCase() : 'ASC';
+
+        const countResult = await pool.query('SELECT COUNT(*) FROM orders');
+        const total = parseInt(countResult.rows[0].count, 10);
+
         const result = await pool.query(
-            'SELECT * FROM orders ORDER BY order_id ASC'
+            `SELECT * FROM orders ORDER BY ${sortColumn} ${sortDirection} LIMIT $1 OFFSET $2`,
+            [limit, offset]
         );
-        return result.rows;
+
+        return {
+            data: result.rows,
+            total,
+            page: parseInt(page, 10),
+            limit: parseInt(limit, 10)
+        };
     }
 
     static async findById(id) {

@@ -3,7 +3,7 @@ const OrderService = require('../services/OrderService');
 class OrderController {
     static async getAll(req, res, next) {
         try {
-            const orders = await OrderService.getAll();
+            const orders = await OrderService.getAll(req.query);
             return res.json(orders);
         } catch (err) {
             next(err);
