@@ -1,4 +1,4 @@
-const BASE = "http://localhost:3001/clients";
+const BASE = process.env.CLIENTS_URL;
 
 export const getClients = async () => {
     const res = await fetch(`${BASE}`);
