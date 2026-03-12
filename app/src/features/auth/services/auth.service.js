@@ -1,4 +1,4 @@
-const BASE = process.env.AUTH_URL;
+const BASE = import.meta.env.VITE_API_URL;
 
 export const login = async ({ client_email, password }) => {
     const res = await fetch(`${BASE}/login`, {
