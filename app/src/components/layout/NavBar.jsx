@@ -1,21 +1,26 @@
-import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const navLinks = [
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/clients', label: 'Clients' },
   { to: '/departments', label: 'Departments' },
+  { to: '/employees', label: 'Employees'}
 ];
 
 const NavBar = () => {
   const { client, signOut } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = client?.role === 'admin';
+  const links = isAdmin
+    ? [...navLinks, { to: '/admin/statistics', label: 'Sales Stats' }]
+    : navLinks;
 
   const handleSignOut = () => {
     signOut();
-    navigate('/');
+    navigate("/");
   };
 
   return (
@@ -24,23 +29,27 @@ const NavBar = () => {
         <Typography variant="h6" sx={{ mr: 3 }}>
           CSIS279 App
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', flexGrow: 1 }}>
-          {client && navLinks.map((link) => (
-            <Button
-              key={link.to}
-              color="inherit"
-              component={NavLink}
-              to={link.to}
-              sx={{ '&.active': { textDecoration: 'underline' } }}
-            >
-              {link.label}
-            </Button>
-          ))}
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", flexGrow: 1 }}>
+          {client &&
+            navLinks.map((link) => (
+              <Button
+                key={link.to}
+                color="inherit"
+                component={NavLink}
+                to={link.to}
+                sx={{ "&.active": { textDecoration: "underline" } }}
+              >
+                {link.label}
+              </Button>
+            ))}
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
           {client ? (
             <>
-              <Typography variant="body2" sx={{ color: 'inherit', opacity: 0.85 }}>
+              <Typography
+                variant="body2"
+                sx={{ color: "inherit", opacity: 0.85 }}
+              >
                 {client.client_name}
               </Typography>
               <Button color="inherit" onClick={handleSignOut}>
@@ -49,12 +58,20 @@ const NavBar = () => {
             </>
           ) : (
             <>
-              <Button color="inherit" component={NavLink} to="/login"
-                sx={{ '&.active': { textDecoration: 'underline' } }}>
+              <Button
+                color="inherit"
+                component={NavLink}
+                to="/login"
+                sx={{ "&.active": { textDecoration: "underline" } }}
+              >
                 Login
               </Button>
-              <Button color="inherit" component={NavLink} to="/register"
-                sx={{ '&.active': { textDecoration: 'underline' } }}>
+              <Button
+                color="inherit"
+                component={NavLink}
+                to="/register"
+                sx={{ "&.active": { textDecoration: "underline" } }}
+              >
                 Register
               </Button>
             </>
