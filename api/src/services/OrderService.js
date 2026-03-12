@@ -6,8 +6,8 @@ const TransactionRepository = require('../repositories/TransactionRepository');
 const ApiError = require('../middlewares/ApiError');
 
 class OrderService {
-    static async getAll() {
-        return OrderRepository.findAll();
+    static async getAll(query = {}) {
+        return OrderRepository.findAll(query);
     }
 static async findByClientId(customer_id) {
         const orders = await OrderRepository.findByClientId(customer_id);
@@ -103,6 +103,7 @@ static async findByClientId(customer_id) {
             item_id,
             quantity,
             unit_price: item.unit_price,
+            unit_cost: item.unit_cost || 0,
         });
 
         // Recalculate total

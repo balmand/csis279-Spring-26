@@ -13,6 +13,10 @@ const navLinks = [
 const NavBar = () => {
   const { client, signOut } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = client?.role === 'admin';
+  const links = isAdmin
+    ? [...navLinks, { to: '/admin/statistics', label: 'Sales Stats' }]
+    : navLinks;
 
   const handleSignOut = () => {
     signOut();
