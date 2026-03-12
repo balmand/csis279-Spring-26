@@ -9,6 +9,7 @@ import EmployeeForm from "../features/employees/pages/EmployeeForm";
 import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
 import ItemsList from "../features/orders/pages/ItemsInOrder.jsx";
+import SalesStatisticsPage from "../features/statistics/pages/SalesStatisticsPage";
 
 export const routes = [
     {path: "/", element: Home},
@@ -22,6 +23,7 @@ export const routes = [
     {path: "/employees", element: EmployeeList},
     {path: "/employees/new", element: EmployeeForm},
     {path: "/employees/:id/edit", element: EmployeeForm},
+    {path: "/admin/statistics", element: SalesStatisticsPage},
     {path: "/login", element: Login},
     {path: "/register", element: Register},
 

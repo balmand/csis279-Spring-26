@@ -31,7 +31,7 @@ const NavBar = () => {
         </Typography>
         <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", flexGrow: 1 }}>
           {client &&
-            navLinks.map((link) => (
+            links.map((link) => (
               <Button
                 key={link.to}
                 color="inherit"
