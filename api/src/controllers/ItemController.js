@@ -45,6 +45,14 @@ class ItemController {
             next(err);
         }
     }
+    static async adjustStock(req, res, next) {
+        try {
+            const item = await ItemService.adjustStock(req.params.id, req.body.quantityChange);
+            return res.json(item);
+        } catch (err) {
+            next(err);
+        }
+    }
 }
 
 module.exports = ItemController;
