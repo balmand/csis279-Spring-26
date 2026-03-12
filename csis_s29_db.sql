@@ -127,6 +127,19 @@ CREATE TABLE public.transactions (
 
 
 
+-----------loubna task 4-----------------
+-- Order status/date indexes
+CREATE INDEX idx_orders_status          ON public.orders(order_status);
+CREATE INDEX idx_orders_order_date      ON public.orders(order_date);
+
+-- Order item lookup index (Foreign Key)
+CREATE INDEX idx_order_items_order_id   ON public.order_items(order_id);
+
+-- Transaction lookup index (Foreign Key)
+CREATE INDEX idx_transactions_order_id  ON public.transactions(order_id);
+-----------loubna task 4-----------------
+
+
 CREATE INDEX idx_clients_email              ON public.clients(client_email);
 CREATE INDEX idx_orders_status              ON public.orders(order_status);
 CREATE INDEX idx_orders_order_date          ON public.orders(order_date);
