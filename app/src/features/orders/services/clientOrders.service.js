@@ -1,4 +1,4 @@
-const BASE = "http://localhost:3001/clients";
+const BASE = import.meta.env.VITE_API_URL+"/clients";
 
 export const getClients = async () => {
   const res = await fetch(`${BASE}`);
