@@ -9,7 +9,13 @@ class OrderService {
     static async getAll(query = {}) {
         return OrderRepository.findAll(query);
     }
-
+static async findByClientId(customer_id) {
+        const orders = await OrderRepository.findByClientId(customer_id);
+        if(!orders){
+            throw ApiError.notFound(`No orders found for customer with id ${customer_id}`);
+        }
+        return orders;
+    }
     static async getById(id) {
         const order = await OrderRepository.findById(id);
         if (!order) {
