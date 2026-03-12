@@ -6,10 +6,16 @@ const TransactionRepository = require('../repositories/TransactionRepository');
 const ApiError = require('../middlewares/ApiError');
 
 class OrderService {
-    static async getAll() {
-        return OrderRepository.findAll();
+    static async getAll(query = {}) {
+        return OrderRepository.findAll(query);
     }
-
+static async findByClientId(customer_id) {
+        const orders = await OrderRepository.findByClientId(customer_id);
+        if(!orders){
+            throw ApiError.notFound(`No orders found for customer with id ${customer_id}`);
+        }
+        return orders;
+    }
     static async getById(id) {
         const order = await OrderRepository.findById(id);
         if (!order) {
@@ -97,6 +103,7 @@ class OrderService {
             item_id,
             quantity,
             unit_price: item.unit_price,
+            unit_cost: item.unit_cost || 0,
         });
 
         // Recalculate total

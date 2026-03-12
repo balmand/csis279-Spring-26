@@ -2,8 +2,8 @@ const ItemRepository = require('../repositories/ItemRepository');
 const ApiError = require('../middlewares/ApiError');
 
 class ItemService {
-    static async getAll() {
-        return ItemRepository.findAll();
+    static async getAll(query = {}) {
+        return ItemRepository.findAll(query);
     }
 
     static async getById(id) {

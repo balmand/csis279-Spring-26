@@ -1,20 +1,19 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
 
 const authRoutes = require('./routes/authRoutes');
 const clientRoutes = require('./routes/clientRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const productRoutes = require('./routes/productRoutes');
+const employeeRoutes = require('./routes/employeeRoutes');
 const itemRoutes = require('./routes/itemRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const stockRoutes = require('./routes/stockRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
-//emailRoutes
-const emailRoutes = require('./routes/emailRoutes');
 
-const notFound = require('./middlewares/notFound');
-const errorHandler = require('./middlewares/errorHandler');
+const notFound = require("./middlewares/notFound");
+const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
 
@@ -30,12 +29,9 @@ app.use('/items', itemRoutes);
 app.use('/orders', orderRoutes);
 app.use('/stock-adjustments', stockRoutes);
 app.use('/transactions', transactionRoutes);
-//emailRoutes
-app.use('/email', emailRoutes);
+app.use('/employees', employeeRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
 
 module.exports = app;
-
-
