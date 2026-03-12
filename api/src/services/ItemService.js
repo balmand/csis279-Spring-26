@@ -36,6 +36,13 @@ class ItemService {
             throw ApiError.notFound(`Item with id ${id} not found`);
         }
     }
+    static async adjustStock(id, quantityChange) {
+        const item = await ItemRepository.adjustStock(id, quantityChange);
+        if (!item) {
+            throw ApiError.notFound(`Item with id ${id} not found`);
+        }
+        return item;
+    }
 }
 
 module.exports = ItemService;
