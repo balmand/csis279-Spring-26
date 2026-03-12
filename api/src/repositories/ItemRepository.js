@@ -39,11 +39,11 @@ class ItemRepository {
         return result.rows[0] || null;
     }
 
-    static async create({ product_id, item_name, item_sku, unit_price, unit_cost, stock_quantity }) {
+    static async create({ product_id, item_name, item_sku, unit_price, stock_quantity }) {
         const result = await pool.query(
-            `INSERT INTO items (product_id, item_name, item_sku, unit_price, unit_cost, stock_quantity)
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-            [product_id || null, item_name, item_sku, unit_price, unit_cost || 0, stock_quantity || 0]
+            `INSERT INTO items (product_id, item_name, item_sku, unit_price, stock_quantity)
+             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+            [product_id || null, item_name, item_sku, unit_price || 0, stock_quantity || 0]
         );
         return result.rows[0];
     }
