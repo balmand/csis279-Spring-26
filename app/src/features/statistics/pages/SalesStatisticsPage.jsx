@@ -457,7 +457,6 @@ const SalesStatisticsPage = () => {
             <Paper sx={{ p: 2.5 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
                 <Typography variant="h6">Employee Ranking</Typography>
-                {kpis.bestEmployee ? <Chip size="small" color="success" label={`Best: ${kpis.bestEmployee.employeeName}`} /> : null}
               </Stack>
               <Box sx={{ overflowX: 'auto' }}>
                 <Table size="small">
@@ -471,28 +470,43 @@ const SalesStatisticsPage = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {dashboard.salesByEmployee.map((employee) => {
-                      const isBest = kpis.bestEmployee?.employeeId === employee.employeeId;
-                      const isWorst = kpis.worstEmployee?.employeeId === employee.employeeId;
+                    {(() => {
+                      const employees = dashboard.salesByEmployee || [];
 
-                      return (
-                        <TableRow key={employee.employeeId}>
-                          <TableCell>
-                            <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
-                              <Typography variant="body2">{employee.employeeName}</Typography>
-                              {isBest ? <Chip label="Best" color="success" size="small" variant="outlined" /> : null}
-                              {isWorst ? <Chip label="Lowest" color="warning" size="small" variant="outlined" /> : null}
-                            </Stack>
-                          </TableCell>
-                          <TableCell align="right">{formatCurrency(employee.revenue)}</TableCell>
-                          <TableCell align="right" sx={{ color: employee.profit >= 0 ? 'success.main' : 'error.main' }}>
-                            {formatCurrency(employee.profit)}
-                          </TableCell>
-                          <TableCell align="right">{formatNumber(employee.ordersCount)}</TableCell>
-                          <TableCell align="right">{formatNumber(employee.unitsSold)}</TableCell>
-                        </TableRow>
-                      );
-                    })}
+                      if (!employees.length) return null;
+
+                      // Sort employees by profit descending
+                      const sortedEmployees = [...employees].sort((a, b) => b.profit - a.profit);
+
+                      const bestEmployeeId = sortedEmployees[0]?.employeeId;
+                      const worstEmployeeId = sortedEmployees[sortedEmployees.length - 1]?.employeeId;
+
+                      return sortedEmployees.map((employee) => {
+                        const isBest = employee.employeeId === bestEmployeeId;
+                        const isWorst = employee.employeeId === worstEmployeeId;
+
+                        return (
+                          <TableRow key={employee.employeeId}>
+                            <TableCell>
+                              <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
+                                <Typography variant="body2">{employee.employeeName}</Typography>
+                                {isBest && <Chip label="Best" color="success" size="small" variant="outlined" />}
+                                {isWorst && <Chip label="Lowest" color="warning" size="small" variant="outlined" />}
+                              </Stack>
+                            </TableCell>
+                            <TableCell align="right">{formatCurrency(employee.revenue)}</TableCell>
+                            <TableCell
+                              align="right"
+                              sx={{ color: employee.profit >= 0 ? 'success.main' : 'error.main' }}
+                            >
+                              {formatCurrency(employee.profit)}
+                            </TableCell>
+                            <TableCell align="right">{formatNumber(employee.ordersCount)}</TableCell>
+                            <TableCell align="right">{formatNumber(employee.unitsSold)}</TableCell>
+                          </TableRow>
+                        );
+                      });
+                    })()}
                   </TableBody>
                 </Table>
               </Box>

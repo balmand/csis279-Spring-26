@@ -3,6 +3,10 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Alert, Button, Link, MenuItem, Paper, Stack, TextField, Typography, Box } from '@mui/material';
 import { register } from '../services/auth.service';
 import { useAuth } from '../../../context/AuthContext';
+import dayjs from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 const Register = () => {
     const [form, setForm] = useState({
@@ -55,15 +59,20 @@ const Register = () => {
                         required
                         fullWidth
                     />
-                    <TextField
-                        label="Date of Birth"
-                        name="client_dob"
-                        type="date"
-                        value={form.client_dob}
-                        onChange={handleChange}
-                        InputLabelProps={{ shrink: true }}
-                        fullWidth
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="Date of Birth"
+                            format="YYYY-MM-DD"
+                            value={form.client_dob ? dayjs(form.client_dob) : null}
+                            onChange={(newValue) =>
+                                setForm({
+                                    ...form,
+                                    client_dob: newValue ? newValue.format("YYYY-MM-DD") : ""
+                                })
+                            }
+                            slotProps={{ textField: { fullWidth: true } }}
+                        />
+                    </LocalizationProvider>
                     <TextField
                         select
                         label="Role"

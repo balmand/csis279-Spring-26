@@ -218,8 +218,8 @@ class StatisticsRepository {
             FROM clients c
             LEFT JOIN sales_by_employee s ON s.employee_id = c.client_id
             WHERE c.role IN ('admin', 'employee')
-              AND ($3::int IS NULL OR c.client_id = $3::int)
-            ORDER BY revenue DESC, profit DESC, c.client_name ASC
+            AND ($3::int IS NULL OR c.client_id = $3::int)
+            ORDER BY profit DESC, revenue DESC, c.client_name ASC
         `;
 
         const result = await pool.query(query, this.getBaseParams(filters));
