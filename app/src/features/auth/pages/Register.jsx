@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { Alert, Button, Link, Paper, Stack, TextField, Typography, Box } from '@mui/material';
+import { Alert, Button, Link, MenuItem, Paper, Stack, TextField, Typography, Box } from '@mui/material';
 import { register } from '../services/auth.service';
 import { useAuth } from '../../../context/AuthContext';
+import dayjs from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 const Register = () => {
     const [form, setForm] = useState({
         client_name: '',
         client_email: '',
         client_dob: '',
+        role: 'customer',
         password: '',
     });
     const [error, setError] = useState('');
@@ -54,15 +59,33 @@ const Register = () => {
                         required
                         fullWidth
                     />
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="Date of Birth"
+                            format="YYYY-MM-DD"
+                            value={form.client_dob ? dayjs(form.client_dob) : null}
+                            onChange={(newValue) =>
+                                setForm({
+                                    ...form,
+                                    client_dob: newValue ? newValue.format("YYYY-MM-DD") : ""
+                                })
+                            }
+                            slotProps={{ textField: { fullWidth: true } }}
+                        />
+                    </LocalizationProvider>
                     <TextField
-                        label="Date of Birth"
-                        name="client_dob"
-                        type="date"
-                        value={form.client_dob}
+                        select
+                        label="Role"
+                        name="role"
+                        value={form.role}
                         onChange={handleChange}
-                        InputLabelProps={{ shrink: true }}
+                        required
                         fullWidth
-                    />
+                    >
+                        <MenuItem value="customer">Customer</MenuItem>
+                        <MenuItem value="employee">Employee</MenuItem>
+                        <MenuItem value="admin">Admin</MenuItem>
+                    </TextField>
                     <TextField
                         label="Password"
                         name="password"

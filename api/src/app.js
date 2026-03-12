@@ -1,6 +1,6 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+const express = require("express");
+const cors = require("cors");
+const bodyParser = require("body-parser");
 
 const authRoutes = require('./routes/authRoutes');
 const clientRoutes = require('./routes/clientRoutes');
@@ -12,8 +12,8 @@ const orderRoutes = require('./routes/orderRoutes');
 const stockRoutes = require('./routes/stockRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 
-const notFound = require('./middlewares/notFound');
-const errorHandler = require('./middlewares/errorHandler');
+const notFound = require("./middlewares/notFound");
+const errorHandler = require("./middlewares/errorHandler");
 
 const app = express();
 

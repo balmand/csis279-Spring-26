@@ -8,6 +8,7 @@ import EmployeeList from "../features/employees/pages/EmployeeList";
 import EmployeeForm from "../features/employees/pages/EmployeeForm";
 import Login from "../features/auth/pages/Login";
 import Register from "../features/auth/pages/Register";
+import ItemsList from "../features/orders/pages/ItemsInOrder.jsx";
 
 export const routes = [
     {path: "/", element: Home},
