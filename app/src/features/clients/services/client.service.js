@@ -1,25 +1,21 @@
-const BASE = import.meta.env.VITE_API_URL+"/clients";
+import { api } from "../../../services/api";
 
-export const getClients = async () => {
-    const res = await fetch(`${BASE}`);
-    const data = await res.json();
-    return data;
+export const getClients = () => {
+    return api("/clients");
 }
 
-export const getClient = async(id) =>{
-    const res = await fetch(`${BASE}/${id}`);
-    const data = await res.json();
-    return data;
+export const getClient = (id) =>{
+    return api(`/clients/${id}`);
 }
 
-export const saveClient = async(data, id) => {
-    fetch(id ? `${BASE}/${id}` : BASE, {
+export const saveClient = (data, id) => {
+    return api(id ? `/clients/${id}` : "/clients", {
         method: id ? "PUT" : "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(data)
-    })
+    });
 }
 
 export const deleteUser = (id) =>{
-    fetch(`${BASE}/${id}`, {method: "DELETE"});
+    return api(`/clients/${id}`, { method: "DELETE" });
 }

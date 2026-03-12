@@ -1,23 +1,19 @@
-const BASE = import.meta.env.VITE_API_URL+"/auth";
+import { api } from "../../../services/api";
 
-export const login = async ({ client_email, password }) => {
-    const url = `${BASE}/login`;
-    console.log(url);
-    const res = await fetch(url, {
+export const login = ({ client_email, password }) => {
+    return api("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ client_email, password }),
+        includeMeta: true,
     });
-    const data = await res.json();
-    return { ok: res.ok, status: res.status, data };
 };
 
-export const register = async ({ client_name, client_email, client_dob, password, role }) => {
-    const res = await fetch(`${BASE}/register`, {
+export const register = ({ client_name, client_email, client_dob, password, role }) => {
+    return api("/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ client_name, client_email, client_dob, password, role }),
+        includeMeta: true,
     });
-    const data = await res.json();
-    return { ok: res.ok, status: res.status, data };
 };

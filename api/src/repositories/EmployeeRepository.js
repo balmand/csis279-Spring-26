@@ -3,40 +3,78 @@ const pool = require('../config/db');
 class EmployeeRepository {
     static async getAll() {
         const result = await pool.query(
-            'SELECT * FROM employees ORDER BY employee_id ASC'
+            `SELECT
+                client_id AS employee_id,
+                client_name AS employee_name,
+                client_email AS employee_email,
+                role AS employee_role,
+                client_dob AS employee_dob,
+                NULL::INTEGER AS employee_department
+            FROM clients
+            WHERE role IN ('employee', 'admin')
+            ORDER BY client_id ASC`
         );
         return result.rows;
     }
 
     static async getById(id) {
         const result = await pool.query(
-            `SELECT * FROM EMPLOYEES WHERE employee_id = $1`, [id]
+            `SELECT
+                client_id AS employee_id,
+                client_name AS employee_name,
+                client_email AS employee_email,
+                role AS employee_role,
+                client_dob AS employee_dob,
+                NULL::INTEGER AS employee_department
+            FROM clients
+            WHERE client_id = $1 AND role IN ('employee', 'admin')`,
+            [id]
         );
 
         return result.rows[0] || null;
     }
 
-    static async create({ employee_name, employee_email, employee_role, employee_dob, employee_department}) {
+    static async create({ employee_name, employee_email, employee_role, employee_dob }) {
         const result = await pool.query(
-            'INSERT INTO employees (employee_name, employee_email, employee_role, employee_dob, employee_department) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [employee_name, employee_email, employee_role, employee_dob, employee_department]
+            `INSERT INTO clients (client_name, client_email, role, client_dob, password_hash)
+             VALUES ($1, $2, $3, $4, '')
+             RETURNING
+                client_id AS employee_id,
+                client_name AS employee_name,
+                client_email AS employee_email,
+                role AS employee_role,
+                client_dob AS employee_dob,
+                NULL::INTEGER AS employee_department`,
+            [employee_name, employee_email, employee_role, employee_dob || null]
         );
-        console.log(result);
         return result.rows[0];
     }
 
-    static async update(id, { employee_name, employee_email, employee_role }) {
+    static async update(id, { employee_name, employee_email, employee_role, employee_dob }) {
         const result = await pool.query(
-            `UPDATE employees SET employee_name = $1, employee_email = $2, employee_role = $3
-                WHERE employee_id = $4 RETURNING *`,
-                [employee_name, employee_email, employee_role, id]
+            `UPDATE clients
+             SET client_name = $1,
+                 client_email = $2,
+                 role = $3,
+                 client_dob = $4,
+                 updated_at = NOW()
+             WHERE client_id = $5 AND role IN ('employee', 'admin')
+             RETURNING
+                client_id AS employee_id,
+                client_name AS employee_name,
+                client_email AS employee_email,
+                role AS employee_role,
+                client_dob AS employee_dob,
+                NULL::INTEGER AS employee_department`,
+                [employee_name, employee_email, employee_role, employee_dob || null, id]
         );
         return result.rows[0] || null;
     }
 
     static async remove(id) {
         const result = await pool.query(
-            `DELETE FROM employees WHERE employee_id = $1`, [id]
+            `DELETE FROM clients WHERE client_id = $1 AND role IN ('employee', 'admin')`,
+            [id]
         );
         return result.rowCount > 0;
     }

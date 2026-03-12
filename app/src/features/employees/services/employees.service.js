@@ -9,7 +9,7 @@ export const getEmployee = (id) => {
 }
 
 export const saveEmployee = (data, id) => {
-    api(id ? `/employees/${id}` : `/employees`, {
+    return api(id ? `/employees/${id}` : `/employees`, {
         method: id ? "PUT" : "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(data),
@@ -17,7 +17,7 @@ export const saveEmployee = (data, id) => {
 }
 
 export const deleteEmployee = (id) => {
-    api(`/employees/${id}`, {
+    return api(`/employees/${id}`, {
         method: "DELETE",
     });
 }

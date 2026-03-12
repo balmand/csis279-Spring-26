@@ -48,7 +48,6 @@ class EmployeeService {
         if (!employee_deleted) {
             throw ApiError.notFound(`Employee with id ${id} was not found.`);
         }
-        console.log(employee_deleted); // <-- Future testing. Just in case.
     }
 }
 

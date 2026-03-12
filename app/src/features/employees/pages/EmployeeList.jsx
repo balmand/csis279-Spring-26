@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
 import {
+  Alert,
   Button,
   Paper,
   Stack,
@@ -17,6 +18,8 @@ import { getDepartments } from '../../departments/services/departments.service';
 const EmployeeList = () => {
   const [employees, setEmployees] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [error, setError] = useState('');
+
   useEffect(() => {
     loadEmployees();
     loadDepartments();
@@ -25,25 +28,48 @@ const EmployeeList = () => {
    const loadDepartments = async () => {
     try {
         const deptData = await getDepartments();
-        setDepartments(deptData);
-      } catch (err) {
-        console.error("Failed to load departments", err);
+        if (Array.isArray(deptData)) {
+          setDepartments(deptData);
+          return;
+        }
+        setDepartments([]);
+        setError(deptData?.message || 'Failed to load departments.');
+      } catch {
+        setDepartments([]);
+        setError('Failed to load departments.');
       }
   };
+
   const loadEmployees = async () => {
-    const employees = await getEmployees();
-    console.log(employees);
-    setEmployees(employees);
+    try {
+      const data = await getEmployees();
+      if (Array.isArray(data)) {
+        setEmployees(data);
+        return;
+      }
+      setEmployees([]);
+      setError(data?.message || 'Failed to load employees.');
+    } catch {
+      setEmployees([]);
+      setError('Failed to load employees.');
+    }
   };
 
   const remove = async (id) => {
-    await deleteEmployee(id);
-    loadEmployees();
+    const response = await deleteEmployee(id);
+    if (response?.code || response?.message) {
+      setError(response?.message || 'Failed to delete employee.');
+      return;
+    }
+    await loadEmployees();
   };
 
   const getDepartmentName = (id) => {
-    const dept = departments.find(d => d.dep_id === parseInt(id));
-    return dept ? dept.dep_name : 'Unknown Error...';
+    if (!id) {
+      return '-';
+    }
+    const dept = departments.find((d) => d.dep_id === Number.parseInt(id, 10));
+    return dept ? dept.dep_name : '-';
   };
 
   return (
@@ -54,6 +80,7 @@ const EmployeeList = () => {
           Add Employee
         </Button>
       </Stack>
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
 
       <Table size="small">
         <TableHead>

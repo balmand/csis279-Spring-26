@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Paper, Stack, TextField, Typography, MenuItem } from '@mui/material';
+import { Alert, Button, Paper, Stack, TextField, Typography, MenuItem } from '@mui/material';
 import { getEmployee, saveEmployee } from '../services/employees.service';
 import { getDepartments } from '../../departments/services/departments.service';
 const EmployeeForm = () => {
   const [form, setForm] = useState({ employee_name: '', employee_email: '', employee_role: '', employee_dob: '', employee_department: '' });
   const [departments, setDepartments] = useState([]);
+  const [error, setError] = useState('');
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -19,21 +20,35 @@ const EmployeeForm = () => {
 
   const loadEmployee = async (id) => {
     const res = await getEmployee(id);
+    if (res?.code || res?.message) {
+      setError(res?.message || 'Failed to load employee.');
+      return;
+    }
     setForm({ employee_name: res.employee_name, employee_email: res.employee_email, employee_role: res.employee_role, employee_dob: res.employee_dob, employee_department: res.employee_department });
   };
 
   const submit = async (e) => {
     e.preventDefault();
-    await saveEmployee(form, id);
+    const response = await saveEmployee(form, id);
+    if (response?.code || response?.message) {
+      setError(response?.message || 'Failed to save employee.');
+      return;
+    }
     navigate('/employees');
   };
 
   const loadDepartments = async () => {
     try {
         const deptData = await getDepartments();
-        setDepartments(deptData);
-      } catch (err) {
-        console.error("Failed to load departments", err);
+        if (Array.isArray(deptData)) {
+          setDepartments(deptData);
+          return;
+        }
+        setDepartments([]);
+        setError(deptData?.message || 'Failed to load departments.');
+      } catch {
+        setDepartments([]);
+        setError('Failed to load departments.');
       }
   };
 
@@ -42,6 +57,7 @@ const EmployeeForm = () => {
       <Typography variant="h5" sx={{ mb: 2 }}>
         {id ? 'Edit' : 'Add'} Employee
       </Typography>
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
       <Stack component="form" spacing={2} onSubmit={submit}>
         <TextField
           label="Employee name"

@@ -10,7 +10,7 @@ export const getDepartment = (id) =>{
 
 export const saveDepartment = (data, id) =>{
 
-    api(id ? `/departments/${id}` : `/departments`, {
+    return api(id ? `/departments/${id}` : `/departments`, {
         method: id ? "PUT" : "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(data),
@@ -18,7 +18,7 @@ export const saveDepartment = (data, id) =>{
 }
 
 export const deleteDepartment = (id) => {
-    api(`/departments/${id}`, {
+    return api(`/departments/${id}`, {
         method: "DELETE",
     });
 }

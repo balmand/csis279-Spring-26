@@ -1,4 +1,4 @@
-const BASE = 'http://localhost:3001';
+import { api } from "../../../services/api";
 
 const buildQueryString = (filters = {}) => {
     const params = new URLSearchParams();
@@ -12,20 +12,14 @@ const buildQueryString = (filters = {}) => {
     return params.toString();
 };
 
-export const getSalesDashboard = async (filters = {}, clientId) => {
+export const getSalesDashboard = (filters = {}, clientId) => {
     const queryString = buildQueryString(filters);
-    const endpoint = `${BASE}/statistics/sales/dashboard${queryString ? `?${queryString}` : ''}`;
+    const endpoint = `/statistics/sales/dashboard${queryString ? `?${queryString}` : ''}`;
 
-    const res = await fetch(endpoint, {
+    return api(endpoint, {
         headers: {
             'x-client-id': clientId,
         },
+        includeMeta: true,
     });
-    const data = await res.json();
-
-    return {
-        ok: res.ok,
-        status: res.status,
-        data,
-    };
 };

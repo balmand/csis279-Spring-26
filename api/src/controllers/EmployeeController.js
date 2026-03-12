@@ -21,7 +21,6 @@ class EmployeeController {
 
     static async create(req, res, next) {
         try {
-            console.log("Employee Controller: ", req.body);
             const employee = await EmployeeService.create(req.body);
             return res.status(201).json(employee);
         } catch (err) {

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Button, Paper, Stack, TextField, Typography } from '@mui/material';
 import { getDepartment, saveDepartment } from '../services/departments.service';
 
 const DepartmentForm = () => {
   const [form, setForm] = useState({ name: '' });
+  const [error, setError] = useState('');
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -14,12 +15,20 @@ const DepartmentForm = () => {
 
   const loadDepartment = async (departmentId) => {
     const res = await getDepartment(departmentId);
+    if (res?.code || res?.message) {
+      setError(res?.message || 'Failed to load department.');
+      return;
+    }
     setForm({ name: res.dep_name });
   };
 
   const submit = async (e) => {
     e.preventDefault();
-    await saveDepartment(form, id);
+    const response = await saveDepartment(form, id);
+    if (response?.code || response?.message) {
+      setError(response?.message || 'Failed to save department.');
+      return;
+    }
     navigate('/departments');
   };
 
@@ -28,6 +37,7 @@ const DepartmentForm = () => {
       <Typography variant="h5" sx={{ mb: 2 }}>
         {id ? 'Edit' : 'Add'} Department
       </Typography>
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
       <Stack component="form" spacing={2} onSubmit={submit}>
         <TextField
           label="Department Name"

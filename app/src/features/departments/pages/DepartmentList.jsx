@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  Alert,
   Button,
   Paper,
   Stack,
@@ -15,19 +16,34 @@ import { getDepartments, deleteDepartment } from '../services/departments.servic
 
 const DepartmentList = () => {
   const [departments, setDepartments] = useState([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     loadDep();
   }, []);
 
   const loadDep = async () => {
-    const deps = await getDepartments();
-    setDepartments(deps);
+    try {
+      const deps = await getDepartments();
+      if (Array.isArray(deps)) {
+        setDepartments(deps);
+        return;
+      }
+      setDepartments([]);
+      setError(deps?.message || 'Failed to load departments.');
+    } catch {
+      setDepartments([]);
+      setError('Failed to load departments.');
+    }
   };
 
   const remove = async (id) => {
-    await deleteDepartment(id);
-    loadDep();
+    const response = await deleteDepartment(id);
+    if (response?.code || response?.message) {
+      setError(response?.message || 'Failed to delete department.');
+      return;
+    }
+    await loadDep();
   };
 
   return (
@@ -38,6 +54,7 @@ const DepartmentList = () => {
           Add Department
         </Button>
       </Stack>
+      {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
 
       <Table size="small">
         <TableHead>
