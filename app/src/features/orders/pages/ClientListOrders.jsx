@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import {
+  Alert,
   Box,
   Button,
+  CircularProgress,
   Paper,
   Stack,
   Table,
@@ -17,6 +18,8 @@ import { getClients } from "../services/clientOrders.service.js";
 
 const ClientListOrders = () => {
   const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,8 +27,17 @@ const ClientListOrders = () => {
   }, []);
 
   const loadClients = async () => {
-    const data = await getClients();
-    setClients(data);
+    setLoading(true);
+    setError('');
+    try {
+      const data = await getClients();
+      setClients(Array.isArray(data) ? data : []);
+    } catch {
+      setError('Failed to load clients.');
+      setClients([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleViewOrders = (clientId) => {
@@ -40,40 +52,47 @@ const ClientListOrders = () => {
         alignItems="center"
         sx={{ mb: 2 }}
       >
-        <Typography variant="h5">Client List</Typography>
+        <Typography variant="h5">Orders by Client</Typography>
       </Stack>
 
-      <Box sx={{ overflowX: "auto" }}>
-        <Button component={Link} variant="contained" to="/clients/new">
-          Create
-        </Button>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {clients.map((client) => (
-              <TableRow key={client.client_id}>
-                <TableCell>{client.client_id}</TableCell>
-                <TableCell>{client.client_name}</TableCell>
-                <TableCell>
-                  <Button
-                    onClick={() => handleViewOrders(client.client_id)}
-                    variant="outlined"
-                    size="small"
-                  >
-                    View Orders
-                  </Button>
-                </TableCell>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : clients.length === 0 ? (
+        <Typography sx={{ py: 2 }}>No clients found.</Typography>
+      ) : (
+        <Box sx={{ overflowX: "auto" }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Box>
+            </TableHead>
+            <TableBody>
+              {clients.map((client) => (
+                <TableRow key={client.client_id}>
+                  <TableCell>{client.client_id}</TableCell>
+                  <TableCell>{client.client_name}</TableCell>
+                  <TableCell>
+                    <Button
+                      onClick={() => handleViewOrders(client.client_id)}
+                      variant="outlined"
+                      size="small"
+                    >
+                      View Orders
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
+      )}
     </Paper>
   );
 };

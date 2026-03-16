@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Button, CircularProgress, Paper, Stack, TextField, Typography } from '@mui/material';
 import { getItem, saveItem } from '../services/items.service';
 
 const ItemForm = () => {
@@ -10,6 +10,8 @@ const ItemForm = () => {
     unit_price: '',
     stock_quantity: '',
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -18,13 +20,17 @@ const ItemForm = () => {
   }, [id]);
 
   const loadItem = async (item_id) => {
-    const res = await getItem(item_id);
-    setForm({
-      item_name: res.item_name,
-      item_sku: res.item_sku,
-      unit_price: res.unit_price,
-      stock_quantity: res.stock_quantity,
-    });
+    try {
+      const res = await getItem(item_id);
+      setForm({
+        item_name: res.item_name,
+        item_sku: res.item_sku,
+        unit_price: res.unit_price,
+        stock_quantity: res.stock_quantity,
+      });
+    } catch {
+      setError('Failed to load item.');
+    }
   };
 
   const handleChange = (e) => {
@@ -33,13 +39,26 @@ const ItemForm = () => {
 
   const submit = async (e) => {
     e.preventDefault();
-    await saveItem({
-      item_name: form.item_name,
-      item_sku: form.item_sku,
-      unit_price: parseFloat(form.unit_price),       
-      stock_quantity: parseInt(form.stock_quantity),  
-    }, id);
-    navigate('/items');
+    setError('');
+    setLoading(true);
+    try {
+      const response = await saveItem({
+        item_name: form.item_name,
+        item_sku: form.item_sku,
+        unit_price: parseFloat(form.unit_price),
+        stock_quantity: parseInt(form.stock_quantity),
+      }, id);
+      if (response?.code || response?.message) {
+        setError(response?.message || 'Failed to save item.');
+        setLoading(false);
+        return;
+      }
+      navigate('/items');
+    } catch {
+      setError('Failed to save item.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,8 +96,9 @@ const ItemForm = () => {
           value={form.stock_quantity}
           onChange={handleChange}
         />
-        <Button type="submit" variant="contained">
-          Save
+        {error && <Alert severity="error">{error}</Alert>}
+        <Button type="submit" variant="contained" disabled={loading}>
+          {loading ? <CircularProgress size={24} /> : 'Save'}
         </Button>
       </Stack>
     </Paper>

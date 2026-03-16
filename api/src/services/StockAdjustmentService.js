@@ -21,6 +21,10 @@ class StockAdjustmentService {
             throw ApiError.notFound(`Item with id ${item_id} not found`);
         }
 
+        if (item.stock_quantity + quantity_change < 0) {
+            throw ApiError.badRequest('Stock cannot go below zero');
+        }
+
         await ItemRepository.adjustStock(item_id, quantity_change);
 
         return StockAdjustmentRepository.create({

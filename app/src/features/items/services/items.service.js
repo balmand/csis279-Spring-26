@@ -1,8 +1,8 @@
 import { api } from "../../../services/api";
 
 export const getItems = async() => {
-    const res= await api("/items");
-    return res.data
+    const res = await api("/items");
+    return res?.data || [];
 }
 
 export const getItem = (id) => {

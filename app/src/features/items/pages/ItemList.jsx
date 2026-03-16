@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Alert,
+  Box,
   Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Paper,
   Stack,
   Table,
@@ -18,19 +24,36 @@ import { getItems, deleteItem, adjustStock } from '../services/items.service';
 const ItemList = () => {
   const [items, setItems] = useState([]);
   const [quantities, setQuantities] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     loadItems();
   }, []);
 
   const loadItems = async () => {
-    const data = await getItems();
-    setItems(data);
+    setLoading(true);
+    setError('');
+    try {
+      const data = await getItems();
+      setItems(Array.isArray(data) ? data : []);
+    } catch {
+      setError('Failed to load items.');
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const remove = async (id) => {
-    await deleteItem(id);
-    loadItems();
+    try {
+      await deleteItem(id);
+      setConfirmDelete(null);
+      loadItems();
+    } catch {
+      setError('Failed to delete item.');
+    }
   };
 
   const handleQuantityChange = (id, value) => {
@@ -44,11 +67,19 @@ const ItemList = () => {
     const change = type === 'decrease' ? -qty : qty;
 
     const currentStock = items.find(i => i.item_id === id)?.stock_quantity ?? 0;
-    if (type === 'decrease' && qty > currentStock) return;
+    if (type === 'decrease' && qty > currentStock) {
+      setError('Cannot decrease stock below zero.');
+      return;
+    }
 
-    await adjustStock(id, change);
-    setQuantities({ ...quantities, [id]: '' });
-    loadItems();
+    try {
+      await adjustStock(id, change);
+      setQuantities({ ...quantities, [id]: '' });
+      setError('');
+      loadItems();
+    } catch {
+      setError('Failed to adjust stock.');
+    }
   };
 
   return (
@@ -56,10 +87,21 @@ const ItemList = () => {
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <Typography variant="h5">Items</Typography>
         <Button component={Link} to="/items/new" variant="contained">
-          Add Items
+          Add Item
         </Button>
       </Stack>
 
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : items.length === 0 ? (
+        <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+          No items found.
+        </Typography>
+      ) : (
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -121,7 +163,7 @@ const ItemList = () => {
                   <Button component={Link} to={`/items/${i.item_id}/edit`} variant="outlined" size="small">
                     Edit
                   </Button>
-                  <Button onClick={() => remove(i.item_id)} variant="contained" color="error" size="small">
+                  <Button onClick={() => setConfirmDelete(i)} variant="contained" color="error" size="small">
                     Delete
                   </Button>
                 </Stack>
@@ -131,6 +173,22 @@ const ItemList = () => {
           ))}
         </TableBody>
       </Table>
+      )}
+
+      <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete <strong>{confirmDelete?.item_name}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDelete(null)}>Cancel</Button>
+          <Button onClick={() => remove(confirmDelete?.item_id)} variant="contained" color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

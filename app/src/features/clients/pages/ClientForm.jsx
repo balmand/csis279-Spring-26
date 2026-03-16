@@ -1,29 +1,47 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Button, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Button, CircularProgress, Paper, Stack, TextField, Typography } from '@mui/material';
 import { getClient, saveClient } from '../services/client.service';
 
 const ClientForm = () => {
   const [form, setForm] = useState({ name: '', email: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(id);  
     if (id) {
       loadClient(id);
     }
   }, [id]);
 
-  const loadClient = async(id) =>{
-    const data = await getClient(id);
-    setForm({name: data.client_name, email:data.client_email});
-  }
+  const loadClient = async (id) => {
+    try {
+      const data = await getClient(id);
+      setForm({ name: data.client_name, email: data.client_email });
+    } catch {
+      setError('Failed to load client.');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await saveClient(form, id);
-    navigate('/clients');
+    setError('');
+    setLoading(true);
+    try {
+      const response = await saveClient(form, id);
+      if (response?.code || response?.message) {
+        setError(response?.message || 'Failed to save client.');
+        setLoading(false);
+        return;
+      }
+      navigate('/clients');
+    } catch {
+      setError('Failed to save client.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,10 +70,10 @@ const ClientForm = () => {
           fullWidth
         />
 
-        <Alert severity="info">We'll never share your email with anyone else.</Alert>
+        {error && <Alert severity="error">{error}</Alert>}
 
-        <Button type="submit" variant="contained">
-          {id ? 'Update' : 'Add'}
+        <Button type="submit" variant="contained" disabled={loading}>
+          {loading ? <CircularProgress size={24} /> : id ? 'Update' : 'Add'}
         </Button>
       </Stack>
     </Paper>

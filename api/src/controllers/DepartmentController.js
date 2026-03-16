@@ -31,7 +31,7 @@ class DepartmentController {
     static async update(req, res, next) {
         try {
             const dep = await DepartmentService.update(req.params.id, req.body);
-            return res.status(201).json(dep);
+            return res.json(dep);
         } catch (err) {
             next(err);
         }

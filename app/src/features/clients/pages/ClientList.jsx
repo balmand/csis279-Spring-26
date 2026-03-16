@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import moment from "moment";
+import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 
 import {
+  Alert,
   Box,
   Button,
+  CircularProgress,
   Paper,
   Stack,
   Table,
@@ -28,24 +30,41 @@ import {
 
 const ClientList = () => {
   const [clients, setClients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     loadClients();
   }, []);
 
   const loadClients = async () => {
-    const data = await getClients();
-    setClients(data);
+    setLoading(true);
+    setError("");
+    try {
+      const data = await getClients();
+      setClients(Array.isArray(data) ? data : []);
+    } catch {
+      setError("Failed to load clients.");
+      setClients([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const removeClient = async (id) => {
-    await deleteUser(id);
-    loadClients();
+    try {
+      await deleteUser(id);
+      setConfirmDelete(null);
+      loadClients();
+    } catch {
+      setError("Failed to delete client.");
+    }
   };
 
   const handleOpenEmail = (client) => {
@@ -88,13 +107,23 @@ const ClientList = () => {
         sx={{ mb: 2 }}
       >
         <Typography variant="h5">Client List</Typography>
-      </Stack>
-
-      <Box sx={{ overflowX: "auto" }}>
         <Button component={Link} variant="contained" to="/clients/new">
           Create
         </Button>
+      </Stack>
 
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : clients.length === 0 ? (
+        <Typography color="text.secondary" sx={{ py: 2, textAlign: "center" }}>
+          No clients found.
+        </Typography>
+      ) : (
+      <Box sx={{ overflowX: "auto" }}>
         <Table size="small">
           <TableHead>
             <TableRow>
@@ -113,7 +142,7 @@ const ClientList = () => {
                 <TableCell>{client.client_name}</TableCell>
                 <TableCell>{client.client_email}</TableCell>
                 <TableCell>
-                  {moment(client.client_dob).format("YYYY-MM-DD")}
+                  {client.client_dob ? dayjs(client.client_dob).format("YYYY-MM-DD") : "—"}
                 </TableCell>
                 <TableCell>
                   <Stack direction="row" spacing={1}>
@@ -127,7 +156,7 @@ const ClientList = () => {
                     </Button>
 
                     <Button
-                      onClick={() => removeClient(client.client_id)}
+                      onClick={() => setConfirmDelete(client)}
                       variant="contained"
                       color="error"
                       size="small"
@@ -149,6 +178,7 @@ const ClientList = () => {
           </TableBody>
         </Table>
       </Box>
+      )}
 
       <Dialog open={open} onClose={handleCloseEmail} fullWidth maxWidth="sm">
         <DialogTitle>Send Email</DialogTitle>
@@ -197,6 +227,26 @@ const ClientList = () => {
           <Button onClick={handleCloseEmail}>Cancel</Button>
           <Button onClick={handleSendEmail} variant="contained">
             Send
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete{" "}
+            <strong>{confirmDelete?.client_name}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDelete(null)}>Cancel</Button>
+          <Button
+            onClick={() => removeClient(confirmDelete?.client_id)}
+            variant="contained"
+            color="error"
+          >
+            Delete
           </Button>
         </DialogActions>
       </Dialog>

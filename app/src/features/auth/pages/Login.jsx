@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { Alert, Box, Button, Link, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Link, Paper, Stack, TextField, Typography } from '@mui/material';
 import { login } from '../services/auth.service';
 import { useAuth } from '../../../context/AuthContext';
 
 const Login = () => {
     const [form, setForm] = useState({ client_email: '', password: '' });
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const { signIn } = useAuth();
     const navigate = useNavigate();
 
@@ -15,12 +16,19 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        const { ok, data } = await login(form);
-        if (ok && data.authenticated) {
-            signIn(data.client);
-            navigate('/');
-        } else {
-            setError(data.message || 'Login failed.');
+        setLoading(true);
+        try {
+            const { ok, data } = await login(form);
+            if (ok && data.authenticated) {
+                signIn(data.client);
+                navigate('/');
+            } else {
+                setError(data?.message || 'Login failed.');
+            }
+        } catch {
+            setError('Network error. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -53,8 +61,8 @@ const Login = () => {
 
                     {error && <Alert severity="error">{error}</Alert>}
 
-                    <Button type="submit" variant="contained">
-                        Login
+                    <Button type="submit" variant="contained" disabled={loading}>
+                        {loading ? <CircularProgress size={24} /> : 'Login'}
                     </Button>
 
                     <Typography variant="body2">

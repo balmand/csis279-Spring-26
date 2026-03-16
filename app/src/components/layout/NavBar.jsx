@@ -7,8 +7,9 @@ const navLinks = [
   { to: '/about', label: 'About' },
   { to: '/clients', label: 'Clients' },
   { to: '/departments', label: 'Departments' },
-  {to:'/items',label:'Items'},
-  { to: '/employees', label: 'Employees'}
+  { to: '/items', label: 'Items' },
+  { to: '/employees', label: 'Employees' },
+  { to: '/orders', label: 'Orders' },
 ];
 
 const NavBar = () => {

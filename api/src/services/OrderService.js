@@ -11,7 +11,7 @@ class OrderService {
     }
 static async findByClientId(customer_id) {
         const orders = await OrderRepository.findByClientId(customer_id);
-        if(!orders){
+        if(!orders || orders.length === 0){
             throw ApiError.notFound(`No orders found for customer with id ${customer_id}`);
         }
         return orders;

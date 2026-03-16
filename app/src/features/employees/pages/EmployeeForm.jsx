@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Alert, Button, Paper, Stack, TextField, Typography, MenuItem } from '@mui/material';
+import { Alert, Button, CircularProgress, Paper, Stack, TextField, Typography, MenuItem } from '@mui/material';
 import { getEmployee, saveEmployee } from '../services/employees.service';
 import { getDepartments } from '../../departments/services/departments.service';
+import dayjs from 'dayjs';
+
 const EmployeeForm = () => {
   const [form, setForm] = useState({ employee_name: '', employee_email: '', employee_role: '', employee_dob: '', employee_department: '' });
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -19,22 +22,43 @@ const EmployeeForm = () => {
   }, [id]);
 
   const loadEmployee = async (id) => {
-    const res = await getEmployee(id);
-    if (res?.code || res?.message) {
-      setError(res?.message || 'Failed to load employee.');
-      return;
+    setLoading(true);
+    try {
+      const res = await getEmployee(id);
+      if (res?.code || res?.message) {
+        setError(res?.message || 'Failed to load employee.');
+        return;
+      }
+      setForm({
+        employee_name: res.employee_name,
+        employee_email: res.employee_email,
+        employee_role: res.employee_role,
+        employee_dob: res.employee_dob ? dayjs(res.employee_dob).format('YYYY-MM-DD') : '',
+        employee_department: res.employee_department,
+      });
+    } catch {
+      setError('Failed to load employee.');
+    } finally {
+      setLoading(false);
     }
-    setForm({ employee_name: res.employee_name, employee_email: res.employee_email, employee_role: res.employee_role, employee_dob: res.employee_dob, employee_department: res.employee_department });
   };
 
   const submit = async (e) => {
     e.preventDefault();
-    const response = await saveEmployee(form, id);
-    if (response?.code || response?.message) {
-      setError(response?.message || 'Failed to save employee.');
-      return;
+    setLoading(true);
+    setError('');
+    try {
+      const response = await saveEmployee(form, id);
+      if (response?.code || response?.message) {
+        setError(response?.message || 'Failed to save employee.');
+        return;
+      }
+      navigate('/employees');
+    } catch {
+      setError('Failed to save employee.');
+    } finally {
+      setLoading(false);
     }
-    navigate('/employees');
   };
 
   const loadDepartments = async () => {
@@ -102,8 +126,8 @@ const EmployeeForm = () => {
             </MenuItem>
           ))}
           </TextField>
-        <Button type="submit" variant="contained">
-          Save
+        <Button type="submit" variant="contained" disabled={loading}>
+          {loading ? <CircularProgress size={24} /> : 'Save'}
         </Button>
       </Stack>
     </Paper>

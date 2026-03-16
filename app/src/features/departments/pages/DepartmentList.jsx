@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Alert,
+  Box,
   Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Paper,
   Stack,
   Table,
@@ -17,16 +23,20 @@ import { getDepartments, deleteDepartment } from '../services/departments.servic
 const DepartmentList = () => {
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   useEffect(() => {
     loadDep();
   }, []);
 
   const loadDep = async () => {
+    setLoading(true);
     try {
       const deps = await getDepartments();
       if (Array.isArray(deps)) {
         setDepartments(deps);
+        setError('');
         return;
       }
       setDepartments([]);
@@ -34,6 +44,8 @@ const DepartmentList = () => {
     } catch {
       setDepartments([]);
       setError('Failed to load departments.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,8 +53,10 @@ const DepartmentList = () => {
     const response = await deleteDepartment(id);
     if (response?.code || response?.message) {
       setError(response?.message || 'Failed to delete department.');
+      setConfirmDelete(null);
       return;
     }
+    setConfirmDelete(null);
     await loadDep();
   };
 
@@ -56,6 +70,15 @@ const DepartmentList = () => {
       </Stack>
       {error ? <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert> : null}
 
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : departments.length === 0 ? (
+        <Typography color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+          No departments found.
+        </Typography>
+      ) : (
       <Table size="small">
         <TableHead>
           <TableRow>
@@ -72,7 +95,7 @@ const DepartmentList = () => {
                   <Button component={Link} to={`/departments/${d.dep_id}/edit`} variant="outlined" size="small">
                     Edit
                   </Button>
-                  <Button onClick={() => remove(d.dep_id)} variant="contained" color="error" size="small">
+                  <Button onClick={() => setConfirmDelete(d)} variant="contained" color="error" size="small">
                     Delete
                   </Button>
                 </Stack>
@@ -81,6 +104,22 @@ const DepartmentList = () => {
           ))}
         </TableBody>
       </Table>
+      )}
+
+      <Dialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete <strong>{confirmDelete?.dep_name}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDelete(null)}>Cancel</Button>
+          <Button onClick={() => remove(confirmDelete?.dep_id)} variant="contained" color="error">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Paper>
   );
 };

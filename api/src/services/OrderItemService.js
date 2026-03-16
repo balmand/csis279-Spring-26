@@ -1,21 +1,15 @@
 const OrderItemRepository = require("../repositories/OrderItemRepository");
 const OrderRepository = require("../repositories/OrderRepository");
+const ItemRepository = require("../repositories/ItemRepository");
 const ApiError = require("../middlewares/ApiError");
 
 class OrderItemService {
   static async findByOrderId(orderId) {
-    try {
-      console.log(`Service: Fetching items for order_id: ${orderId}`); // Log the order_id
-      const order = await OrderItemRepository.findByOrderId(orderId);
-      console.log("Service: Query Results:", order); // Log the query results
-      if (!order || order.length === 0) {
-        throw ApiError.notFound(`Order with id ${orderId} not found`);
-      }
-      return order;
-    } catch (error) {
-      console.error("Service: Error fetching order items:", error); // Log any errors
-      throw error;
+    const items = await OrderItemRepository.findByOrderId(orderId);
+    if (!items || items.length === 0) {
+      throw ApiError.notFound(`No items found for order ${orderId}`);
     }
+    return items;
   }
 
   static async create(data) {
@@ -29,7 +23,7 @@ class OrderItemService {
     }
   }
 
-  static addItem = async (orderId, { item_id, quantity }) => {
+  static async addItem(orderId, { item_id, quantity }) {
     const order = await OrderRepository.findById(orderId);
     if (!order) {
       throw ApiError.notFound(`Order with id ${orderId} not found`);
@@ -37,13 +31,18 @@ class OrderItemService {
     if (order.order_status === "completed") {
       throw ApiError.badRequest("Cannot add items to a completed order");
     }
+    const item = await ItemRepository.findById(item_id);
+    if (!item) {
+      throw ApiError.notFound(`Item with id ${item_id} not found`);
+    }
     return OrderItemRepository.create({
       order_id: orderId,
       item_id,
       quantity,
       unit_price: item.unit_price,
+      unit_cost: item.unit_cost || 0,
     });
-  };
+  }
 
   static async complete(orderId) {
     const order = await OrderRepository.findById(orderId);
@@ -53,12 +52,12 @@ class OrderItemService {
     if (order.order_status === "completed") {
       return { order, alreadyCompleted: true };
     }
-    const completed = await OrderRepository.complete(orderId);
+    const completed = await OrderRepository.markCompleted(orderId);
     if (!completed) {
-      throw ApiError.notFound(
-        `Order with id ${orderId} not found or already completed`,
-      );
+      const refreshed = await OrderRepository.findById(orderId);
+      return { order: refreshed, alreadyCompleted: true };
     }
+    return { order: completed, alreadyCompleted: false };
   }
 
   static async update(id, data) {

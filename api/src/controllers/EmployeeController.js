@@ -31,7 +31,7 @@ class EmployeeController {
     static async update(req, res, next) {
         try {
             const employee = await EmployeeService.update(req.params.id, req.body);
-            return res.status(201).json(employee);
+            return res.json(employee);
         } catch (err) {
             next(err);
         }

@@ -57,14 +57,18 @@ describe('Items CRUD – POST /items', () => {
 });
 
 describe('Items CRUD – GET /items', () => {
-    it('should return an array of items', async () => {
+    it('should return a paginated object with items', async () => {
         const res = await request(app)
             .get('/items')
             .expect('Content-Type', /json/)
             .expect(200);
 
-        expect(Array.isArray(res.body)).toBe(true);
-        expect(res.body.length).toBeGreaterThanOrEqual(1);
+        expect(res.body).toHaveProperty('data');
+        expect(Array.isArray(res.body.data)).toBe(true);
+        expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+        expect(res.body).toHaveProperty('total');
+        expect(res.body).toHaveProperty('page');
+        expect(res.body).toHaveProperty('limit');
     });
 });
 

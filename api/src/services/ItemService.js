@@ -37,11 +37,15 @@ class ItemService {
         }
     }
     static async adjustStock(id, quantityChange) {
-        const item = await ItemRepository.adjustStock(id, quantityChange);
+        const item = await ItemRepository.findById(id);
         if (!item) {
             throw ApiError.notFound(`Item with id ${id} not found`);
         }
-        return item;
+        if (item.stock_quantity + quantityChange < 0) {
+            throw ApiError.badRequest('Stock cannot go below zero');
+        }
+        const updated = await ItemRepository.adjustStock(id, quantityChange);
+        return updated;
     }
 }
 

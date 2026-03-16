@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { Alert, Button, Link, MenuItem, Paper, Stack, TextField, Typography, Box } from '@mui/material';
+import { Alert, Button, CircularProgress, Link, MenuItem, Paper, Stack, TextField, Typography, Box } from '@mui/material';
 import { register } from '../services/auth.service';
 import { useAuth } from '../../../context/AuthContext';
 import dayjs from 'dayjs';
@@ -17,6 +17,7 @@ const Register = () => {
         password: '',
     });
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const { signIn } = useAuth();
     const navigate = useNavigate();
 
@@ -25,12 +26,23 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        const { ok, data } = await register(form);
-        if (ok) {
-            signIn(data);
-            navigate('/');
-        } else {
-            setError(data.message || 'Registration failed.');
+        if (form.password.length < 6) {
+            setError('Password must be at least 6 characters.');
+            return;
+        }
+        setLoading(true);
+        try {
+            const { ok, data } = await register(form);
+            if (ok) {
+                signIn(data);
+                navigate('/');
+            } else {
+                setError(data?.message || 'Registration failed.');
+            }
+        } catch {
+            setError('Network error. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -98,8 +110,8 @@ const Register = () => {
 
                     {error && <Alert severity="error">{error}</Alert>}
 
-                    <Button type="submit" variant="contained">
-                        Register
+                    <Button type="submit" variant="contained" disabled={loading}>
+                        {loading ? <CircularProgress size={24} /> : 'Register'}
                     </Button>
 
                     <Typography variant="body2">

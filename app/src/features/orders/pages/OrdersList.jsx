@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import {
+  Alert,
   Box,
   Button,
+  CircularProgress,
   Paper,
   Stack,
   Table,
@@ -16,8 +18,10 @@ import {
 import { getOrders } from "../services/orders.service.js";
 
 const OrdersList = () => {
-  const { id } = useParams(); // Retrieve the client ID from the route
+  const { id } = useParams();
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (id) {
@@ -26,8 +30,17 @@ const OrdersList = () => {
   }, [id]);
 
   const loadOrders = async (id) => {
-    const data = await getOrders(id); // Fetch orders for the client
-    setOrders(data);
+    setLoading(true);
+    setError('');
+    try {
+      const data = await getOrders(id);
+      setOrders(Array.isArray(data) ? data : []);
+    } catch {
+      setError('Failed to load orders.');
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,39 +54,49 @@ const OrdersList = () => {
         <Typography variant="h5">Orders for Client {id}</Typography>
       </Stack>
 
-      <Box sx={{ overflowX: "auto" }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Total</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.order_id}>
-                <TableCell>{order.order_id}</TableCell>
-                <TableCell>{order.order_date}</TableCell>
-                <TableCell>{order.order_total}</TableCell>
-                <TableCell>{order.order_status}</TableCell>
-                <TableCell>
-                  <Button
-                    component={Link}
-                    to={`/itemsList/${order.order_id}`}
-                    variant="outlined"
-                    size="small"
-                  >
-                    View Order Details
-                  </Button>
-                </TableCell>
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : orders.length === 0 ? (
+        <Typography sx={{ py: 2 }}>No orders found for this client.</Typography>
+      ) : (
+        <Box sx={{ overflowX: "auto" }}>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>ID</TableCell>
+                <TableCell>Date</TableCell>
+                <TableCell>Total</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Action</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Box>
+            </TableHead>
+            <TableBody>
+              {orders.map((order) => (
+                <TableRow key={order.order_id}>
+                  <TableCell>{order.order_id}</TableCell>
+                  <TableCell>{order.order_date}</TableCell>
+                  <TableCell>{order.order_total}</TableCell>
+                  <TableCell>{order.order_status}</TableCell>
+                  <TableCell>
+                    <Button
+                      component={Link}
+                      to={`/orders/${order.order_id}/items`}
+                      variant="outlined"
+                      size="small"
+                    >
+                      View Order Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
+      )}
     </Paper>
   );
 };

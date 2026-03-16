@@ -1,5 +1,5 @@
 const request = require("supertest");
-const app = require("../index");
+const app = require("../src/app");
 
 describe("Clients API", () => {
 
@@ -41,7 +41,7 @@ describe("Clients API", () => {
         email: "updated@test.com"
       });
 
-    expect(res.statusCode).toBe(201);
+    expect(res.statusCode).toBe(200);
     expect(res.body.client_name).toBe("Updated");
   });
 

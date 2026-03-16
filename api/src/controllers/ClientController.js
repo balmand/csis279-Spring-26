@@ -31,7 +31,7 @@ class ClientController {
     static async update(req, res, next) {
         try {
             const client = await ClientService.update(req.params.id, req.body);
-            return res.status(201).json(client);
+            return res.json(client);
         } catch (err) {
             next(err);
         }

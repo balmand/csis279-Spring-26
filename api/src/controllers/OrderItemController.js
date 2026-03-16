@@ -3,14 +3,11 @@ const OrderItemService = require("../services/OrderItemService");
 class OrderItemController {
   static async findByOrderId(req, res, next) {
     try {
-      console.log(`Fetching items for order_id: ${req.params.order_id}`); // Log the order_id
       const orderItems = await OrderItemService.findByOrderId(
         req.params.order_id,
       );
-      console.log("Query Results:", orderItems); // Log the query results
       return res.json(orderItems);
     } catch (err) {
-      console.error("Error fetching order items:", err); // Log any errors
       next(err);
     }
   }
