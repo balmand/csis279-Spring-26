@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import NavBar from './NavBar';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../store/hooks/useAuth';
 
 const Layout = ({ children }) => {
   const { client } = useAuth();

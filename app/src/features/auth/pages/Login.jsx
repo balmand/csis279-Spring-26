@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Alert, Box, Button, CircularProgress, Link, Paper, Stack, TextField, Typography } from '@mui/material';
 import { login } from '../services/auth.service';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../../store/hooks/useAuth';
 
 const Login = () => {
     const [form, setForm] = useState({ client_email: '', password: '' });

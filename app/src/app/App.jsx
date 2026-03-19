@@ -2,7 +2,7 @@ import { Route, Routes, Navigate } from 'react-router-dom';
 import { Container } from '@mui/material';
 import Layout from '../components/layout/Layout';
 import { routes } from './routes';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../store/hooks/useAuth';
 
 const authPaths = ['/login', '/register'];
 

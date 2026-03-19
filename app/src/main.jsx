@@ -1,8 +1,9 @@
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import App from './app/App';
-import { AuthProvider } from './context/AuthContext';
+import { store } from './store';
 
 const theme = createTheme({
   palette: {
@@ -17,12 +18,12 @@ const theme = createTheme({
 });
 
 createRoot(document.getElementById('root')).render(
-  <ThemeProvider theme={theme}>
-    <CssBaseline />
-    <BrowserRouter>
-      <AuthProvider>
+  <Provider store={store}>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <BrowserRouter>
         <App />
-      </AuthProvider>
-    </BrowserRouter>
-  </ThemeProvider>
+      </BrowserRouter>
+    </ThemeProvider>
+  </Provider>
 );

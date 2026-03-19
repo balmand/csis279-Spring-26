@@ -32,7 +32,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../../store/hooks/useAuth';
 import { getSalesDashboard } from '../services/statistics.service';
 
 const defaultFilters = {

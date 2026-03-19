@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { Alert, Button, CircularProgress, Link, MenuItem, Paper, Stack, TextField, Typography, Box } from '@mui/material';
 import { register } from '../services/auth.service';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../../store/hooks/useAuth';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
