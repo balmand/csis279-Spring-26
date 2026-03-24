@@ -140,18 +140,6 @@ CREATE INDEX idx_transactions_order_id  ON public.transactions(order_id);
 -----------loubna task 4-----------------
 
 
-CREATE INDEX idx_clients_email              ON public.clients(client_email);
-CREATE INDEX idx_orders_status              ON public.orders(order_status);
-CREATE INDEX idx_orders_order_date          ON public.orders(order_date);
-CREATE INDEX idx_orders_client_id           ON public.orders(client_id);
-CREATE INDEX idx_orders_employee_id         ON public.orders(employee_id);
-CREATE INDEX idx_order_items_order_id       ON public.order_items(order_id);
-CREATE INDEX idx_order_items_item_id        ON public.order_items(item_id);
-CREATE INDEX idx_items_product_id           ON public.items(product_id);
-CREATE INDEX idx_products_category          ON public.products(category);
-CREATE INDEX idx_stock_adj_item_id          ON public.stock_adjustments(item_id);
-CREATE INDEX idx_transactions_order_id      ON public.transactions(order_id);
-CREATE INDEX idx_transactions_created_at    ON public.transactions(created_at);
 
 
 

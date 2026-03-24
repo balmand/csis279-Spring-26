@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 import {
   Alert,
@@ -22,48 +23,33 @@ import {
   TextField,
 } from "@mui/material";
 
+import { sendClientEmail } from "../services/client.service";
 import {
-  deleteUser,
-  getClients,
-  sendClientEmail,
-} from "../services/client.service";
+  clearClientError,
+  deleteClient,
+  fetchClients,
+} from "../../../store/slices/clientsSlice";
 
 const ClientList = () => {
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [open, setOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const dispatch = useDispatch();
+  const { items: clients, loading, deleting, error } = useSelector((state) => state.clients);
 
   useEffect(() => {
-    loadClients();
-  }, []);
-
-  const loadClients = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await getClients();
-      setClients(Array.isArray(data) ? data : []);
-    } catch {
-      setError("Failed to load clients.");
-      setClients([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    dispatch(fetchClients());
+  }, [dispatch]);
 
   const removeClient = async (id) => {
     try {
-      await deleteUser(id);
+      await dispatch(deleteClient(id)).unwrap();
       setConfirmDelete(null);
-      loadClients();
     } catch {
-      setError("Failed to delete client.");
+      // Redux state already captures the error message.
     }
   };
 
@@ -112,7 +98,11 @@ const ClientList = () => {
         </Button>
       </Stack>
 
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => dispatch(clearClientError())}>
+          {error}
+        </Alert>
+      )}
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
@@ -245,6 +235,7 @@ const ClientList = () => {
             onClick={() => removeClient(confirmDelete?.client_id)}
             variant="contained"
             color="error"
+            disabled={deleting}
           >
             Delete
           </Button>

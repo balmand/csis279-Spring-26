@@ -1,46 +1,42 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Alert, Button, CircularProgress, Paper, Stack, TextField, Typography } from '@mui/material';
-import { getClient, saveClient } from '../services/client.service';
+import {
+  clearCurrentClient,
+  fetchClientById,
+  saveClient,
+} from '../../../store/slices/clientsSlice';
 
 const ClientForm = () => {
   const [form, setForm] = useState({ name: '', email: '' });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { currentClient, currentClientLoading, currentClientError, saving } = useSelector((state) => state.clients);
 
   useEffect(() => {
     if (id) {
-      loadClient(id);
+      dispatch(fetchClientById(id));
+      return;
     }
-  }, [id]);
+    dispatch(clearCurrentClient());
+    setForm({ name: '', email: '' });
+  }, [dispatch, id]);
 
-  const loadClient = async (id) => {
-    try {
-      const data = await getClient(id);
-      setForm({ name: data.client_name, email: data.client_email });
-    } catch {
-      setError('Failed to load client.');
+  useEffect(() => {
+    if (currentClient && id) {
+      setForm({ name: currentClient.client_name, email: currentClient.client_email });
     }
-  };
+  }, [currentClient, id]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setLoading(true);
     try {
-      const response = await saveClient(form, id);
-      if (response?.code || response?.message) {
-        setError(response?.message || 'Failed to save client.');
-        setLoading(false);
-        return;
-      }
+      await dispatch(saveClient({ form, id })).unwrap();
       navigate('/clients');
     } catch {
-      setError('Failed to save client.');
-    } finally {
-      setLoading(false);
+      // Redux state already captures the error message.
     }
   };
 
@@ -50,6 +46,11 @@ const ClientForm = () => {
         {id ? 'Edit' : 'Add'} Client
       </Typography>
 
+      {currentClientLoading ? (
+        <Stack alignItems="center" sx={{ py: 4 }}>
+          <CircularProgress />
+        </Stack>
+      ) : (
       <Stack component="form" spacing={2} onSubmit={handleSubmit}>
         <TextField
           label="Name"
@@ -70,12 +71,13 @@ const ClientForm = () => {
           fullWidth
         />
 
-        {error && <Alert severity="error">{error}</Alert>}
+        {currentClientError && <Alert severity="error">{currentClientError}</Alert>}
 
-        <Button type="submit" variant="contained" disabled={loading}>
-          {loading ? <CircularProgress size={24} /> : id ? 'Update' : 'Add'}
+        <Button type="submit" variant="contained" disabled={saving}>
+          {saving ? <CircularProgress size={24} /> : id ? 'Update' : 'Add'}
         </Button>
       </Stack>
+      )}
     </Paper>
   );
 };

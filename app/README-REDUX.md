@@ -2,6 +2,11 @@
 
 This document explains **why** Redux was introduced and **how** it is implemented step by step in the CSIS279 React app.
 
+It currently documents two Redux-backed areas:
+
+- **Auth state** for login, logout, and route-aware UI
+- **Clients state** for loading, viewing, creating, updating, and deleting clients
+
 ---
 
 ## Table of Contents
@@ -12,8 +17,9 @@ This document explains **why** Redux was introduced and **how** it is implemente
 4. [Step-by-Step Implementation](#step-by-step-implementation)
 5. [Data Flow](#data-flow)
 6. [File Structure](#file-structure)
-7. [Where Redux Is Used](#where-redux-is-used)
-8. [Extending Redux](#extending-redux)
+7. [Client Redux Implementation](#client-redux-implementation)
+8. [Where Redux Is Used](#where-redux-is-used)
+9. [Extending Redux](#extending-redux)
 
 ---
 
@@ -39,7 +45,7 @@ React components manage their own state with `useState`. When **multiple compone
 
 2. **Predictable updates.** Redux uses a single store and clear rules: the only way to change state is to dispatch an action. That makes it easier to reason about when and why auth state changes (e.g., “user logged in” or “user logged out”).
 
-3. **Easier to extend.** If we later add more global state (e.g., notifications, theme, cached lists), we can add new “slices” to the same store and keep one consistent pattern.
+3. **Easier to extend.** If we later add more global state (e.g., notifications, theme, cached lists, or CRUD data such as Clients), we can add new “slices” to the same store and keep one consistent pattern.
 
 4. **Tooling and debugging.** Redux DevTools let you inspect every action and state change, which helps when debugging auth or other global state.
 
@@ -69,11 +75,12 @@ So in this project, “Redux” means **Redux + Redux Toolkit + react-redux**.
 
 At a high level:
 
-1. A **store** holds the global state (e.g., `auth.client`).
-2. An **auth slice** defines that state and the reducers that change it (`signIn`, `signOut`).
-3. The app is wrapped in a **Provider** so every component can access the store.
-4. A custom **useAuth** hook lets components read `client` and call `signIn`/`signOut` without touching Redux APIs directly.
-5. **Persistence:** A store subscription writes `auth.client` to `localStorage` when it changes and the slice initializes from `localStorage` on load.
+1. A **store** holds the global state (e.g., `auth.client` and `clients.items`).
+2. An **auth slice** defines authentication state and the reducers that change it (`signIn`, `signOut`).
+3. A **clients slice** defines shared client CRUD state and async thunks for API calls.
+4. The app is wrapped in a **Provider** so every component can access the store.
+5. A custom **useAuth** hook lets components read `client` and call `signIn`/`signOut` without touching Redux APIs directly.
+6. **Persistence:** A store subscription writes `auth.client` to `localStorage` when it changes and the slice initializes from `localStorage` on load.
 
 The following sections walk through each of these steps in order.
 
@@ -158,15 +165,17 @@ A **slice** is a piece of state plus the reducers and actions that update it.
 
 **File:** `app/src/store/index.js`
 
-The **store** is the single source of truth. It is created with `configureStore` and the auth reducer:
+The **store** is the single source of truth. It is created with `configureStore` and now includes both the auth reducer and the clients reducer:
 
 ```js
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
+import clientsReducer from './slices/clientsSlice';
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    clients: clientsReducer,
   },
 });
 ```
@@ -177,6 +186,16 @@ So the state shape is:
 {
   auth: {
     client: null | { client_id, client_name, client_email, role, ... }
+  },
+  clients: {
+    items: [],
+    currentClient: null,
+    loading: false,
+    currentClientLoading: false,
+    saving: false,
+    deleting: false,
+    error: '',
+    currentClientError: ''
   }
 }
 ```
@@ -319,6 +338,349 @@ So: **one store, one auth slice, one useAuth hook** — and the same data and ac
 
 ---
 
+## Client Redux Implementation
+
+The Clients feature is the first part of this project that uses Redux for **shared CRUD data**, not just auth.
+
+Before this implementation:
+
+- `ClientList.jsx` fetched the client list directly inside the component
+- `ClientForm.jsx` fetched a single client directly when editing
+- loading and error states were tracked separately with local `useState`
+- deleting a client required another full fetch to refresh the UI
+
+That approach worked, but the async logic was spread across multiple components.
+
+With Redux, the shared client data and API lifecycle state are centralized in one place.
+
+### Why Redux for Clients?
+
+Clients are a good fit for Redux because:
+
+1. **More than one screen depends on the same entity**
+   - the list page needs all clients
+   - the form page needs one client for edit mode
+   - both pages should stay consistent after save/delete actions
+
+2. **The feature has repeated async behavior**
+   - fetch a list
+   - fetch one record
+   - save changes
+   - delete a record
+   - show loading and error states
+
+3. **The data should have one source of truth**
+   Putting client state in Redux makes it easier to keep list and form behavior predictable.
+
+4. **It creates a reusable pattern**
+   We can apply the same structure later to `departments`, `products`, or `orders`.
+
+### Clients Slice
+
+**File:** `app/src/store/slices/clientsSlice.js`
+
+The slice uses:
+
+- `createSlice` for state and reducers
+- `createAsyncThunk` for API requests
+- `extraReducers` for pending / fulfilled / rejected async handling
+
+### Clients State Shape
+
+The slice state is:
+
+```js
+{
+  items: [],
+  currentClient: null,
+  loading: false,
+  currentClientLoading: false,
+  saving: false,
+  deleting: false,
+  error: '',
+  currentClientError: ''
+}
+```
+
+What each field represents:
+
+- `items`: the full client list used by the list page
+- `currentClient`: the currently loaded client record for edit mode
+- `loading`: list fetch status
+- `currentClientLoading`: single-client fetch status
+- `saving`: create/update status
+- `deleting`: delete status
+- `error`: list/delete errors
+- `currentClientError`: single-client load/save errors
+
+This split matters because the list page and form page do not always need the same loading and error state.
+
+### Async Thunks
+
+The clients slice defines four async thunks.
+
+#### `fetchClients`
+
+Purpose:
+
+- load all clients for `ClientList.jsx`
+
+Behavior:
+
+- calls `getClients()`
+- expects an array on success
+- rejects with a readable error message if the API response is not usable
+
+#### `fetchClientById`
+
+Purpose:
+
+- load one client for edit mode in `ClientForm.jsx`
+
+Behavior:
+
+- calls `getClient(id)`
+- expects a client object containing `client_id`
+- stores the result in `state.clients.currentClient`
+
+#### `saveClient`
+
+Purpose:
+
+- create a new client or update an existing one
+
+Behavior:
+
+- receives `{ form, id }`
+- calls the existing `saveClient(data, id)` service helper
+- if `id` exists, the request updates a client
+- if `id` is missing, the request creates a new client
+
+On success, the fulfilled reducer:
+
+- stores the returned client in `currentClient`
+- replaces that client in `items` if it already exists
+- adds it to `items` if it is newly created
+- keeps the list sorted by `client_id`
+
+This means the client list stays current without forcing another full fetch after save.
+
+#### `deleteClient`
+
+Purpose:
+
+- delete a client and remove it from Redux state
+
+Behavior:
+
+- calls `deleteUser(id)`
+- on success, returns the deleted `id`
+- the fulfilled reducer removes that id from `items`
+
+So the UI updates immediately after a successful delete.
+
+### Helper Reducers
+
+The slice also includes two normal reducers:
+
+#### `clearClientError`
+
+Used when:
+
+- we want to dismiss an error alert on the list page
+
+It resets:
+
+```js
+state.error = '';
+```
+
+#### `clearCurrentClient`
+
+Used when:
+
+- the form opens in create mode
+- we want to remove any stale client data from a previous edit
+
+It resets:
+
+```js
+state.currentClient = null;
+state.currentClientError = '';
+```
+
+### Async Lifecycle Handling
+
+Each thunk has three stages:
+
+- `pending`
+- `fulfilled`
+- `rejected`
+
+The slice handles them with `extraReducers`.
+
+Patterns used in this implementation:
+
+- `pending`
+  - sets the relevant loading flag
+  - clears the relevant error state
+
+- `fulfilled`
+  - stores the returned data
+  - clears the loading flag
+
+- `rejected`
+  - clears the loading flag
+  - stores a friendly error message
+
+This creates one consistent model for async client behavior across the app.
+
+### Service Layer Reuse
+
+**File:** `app/src/features/clients/services/client.service.js`
+
+The Redux slice reuses the existing service layer:
+
+- `getClients()`
+- `getClient(id)`
+- `saveClient(data, id)`
+- `deleteUser(id)`
+
+That keeps responsibilities clean:
+
+- the **service layer** handles API requests
+- the **Redux slice** handles shared async state
+- the **components** handle rendering and user interaction
+
+### How `ClientList.jsx` Uses Redux
+
+**File:** `app/src/features/clients/pages/ClientList.jsx`
+
+The list page now reads Redux state with:
+
+```js
+const { items: clients, loading, deleting, error } = useSelector(
+  (state) => state.clients
+);
+```
+
+It dispatches:
+
+```js
+dispatch(fetchClients());
+dispatch(deleteClient(id));
+dispatch(clearClientError());
+```
+
+Page flow:
+
+1. component mounts
+2. `fetchClients()` is dispatched
+3. `loading` becomes `true`
+4. the list is stored in `items` when the request succeeds
+5. the page re-renders from Redux state
+6. delete removes the client from `items` without re-fetching the whole list
+
+State that stays local to `ClientList.jsx`:
+
+- email dialog open/close state
+- selected client for email
+- email subject and message
+- email send status
+- delete confirmation dialog state
+
+That is intentional. Local UI state does not need to live in Redux.
+
+### How `ClientForm.jsx` Uses Redux
+
+**File:** `app/src/features/clients/pages/ClientForm.jsx`
+
+The form page reads:
+
+```js
+const { currentClient, currentClientLoading, currentClientError, saving } =
+  useSelector((state) => state.clients);
+```
+
+It dispatches:
+
+```js
+dispatch(fetchClientById(id));
+dispatch(clearCurrentClient());
+dispatch(saveClient({ form, id }));
+```
+
+Form flow:
+
+1. if `id` exists, the page is in edit mode
+2. edit mode dispatches `fetchClientById(id)`
+3. the returned client is stored in `currentClient`
+4. a `useEffect` copies `client_name` and `client_email` into local form state
+5. on submit, the page dispatches `saveClient({ form, id })`
+6. on success, the page navigates back to `/clients`
+
+### Why the Form Fields Stay Local
+
+Even though the feature now uses Redux, the text fields still use component state with `useState`.
+
+That is the right tradeoff here because form input is:
+
+- temporary
+- local to one screen
+- updated on every keystroke
+
+So this implementation follows a useful rule:
+
+- use **Redux** for shared or server-backed state
+- use **local component state** for transient form input state
+
+### Client Data Flow
+
+#### List flow
+
+1. `ClientList.jsx` dispatches `fetchClients()`
+2. the thunk calls `getClients()`
+3. pending reducer sets `loading = true`
+4. fulfilled reducer stores the array in `items`
+5. the list screen re-renders with the new data
+
+#### Edit flow
+
+1. user opens `/clients/:id/edit`
+2. `ClientForm.jsx` dispatches `fetchClientById(id)`
+3. the thunk calls `getClient(id)`
+4. fulfilled reducer stores the result in `currentClient`
+5. the form copies Redux data into local inputs
+
+#### Save flow
+
+1. user submits the form
+2. `saveClient({ form, id })` is dispatched
+3. the thunk calls create or update API
+4. fulfilled reducer updates `currentClient`
+5. fulfilled reducer inserts or replaces the client in `items`
+6. the form navigates back to the list page
+
+#### Delete flow
+
+1. user confirms delete
+2. `deleteClient(id)` is dispatched
+3. the thunk calls the delete API
+4. fulfilled reducer removes the client from `items`
+5. the list updates without another fetch
+
+### Benefits of This Approach
+
+Compared with the old local-state implementation, the Redux client implementation gives us:
+
+1. **Centralized async logic**
+2. **Consistent loading and error handling**
+3. **Shared client state between list and form**
+4. **Fewer full-list refetches**
+5. **A repeatable Redux pattern for other entities**
+
+---
+
 ## File Structure
 
 Redux-related code lives under `app/src/store/`:
@@ -330,6 +692,7 @@ app/src/
 │   ├── index.js                # configureStore, persistence subscription
 │   ├── slices/
 │   │   └── authSlice.js        # auth state + signIn/signOut reducers
+│   │   └── clientsSlice.js     # client CRUD state + async thunks
 │   └── hooks/
 │       └── useAuth.js          # useAuth() using useSelector + useDispatch
 ├── app/
@@ -343,6 +706,12 @@ app/src/
     │   └── pages/
     │       ├── Login.jsx        # uses useAuth().signIn
     │       └── Register.jsx    # uses useAuth().signIn
+    ├── clients/
+    │   ├── pages/
+    │   │   ├── ClientList.jsx   # uses Redux for list/delete state
+    │   │   └── ClientForm.jsx   # uses Redux for load/save state
+    │   └── services/
+    │       └── client.service.js # API helpers used by the clients slice
     └── statistics/
         └── pages/
             └── SalesStatisticsPage.jsx  # uses useAuth().client
@@ -360,14 +729,18 @@ app/src/
 | **Login.jsx** | `signIn` | After successful login, store the client and redirect. |
 | **Register.jsx** | `signIn` | After successful registration, store the client and redirect. |
 | **SalesStatisticsPage.jsx** | `client` | Pass `client.client_id` (or similar) when fetching statistics. |
+| **ClientList.jsx** | `clients.items`, `clients.loading`, `clients.error`, `fetchClients`, `deleteClient` | Load, render, and delete clients through the Redux store. |
+| **ClientForm.jsx** | `clients.currentClient`, `clients.currentClientLoading`, `clients.currentClientError`, `saveClient`, `fetchClientById` | Load a single client for edit mode and save create/update changes through Redux. |
 
-All of this is done through the single `useAuth()` hook backed by Redux.
+Auth state is consumed through the single `useAuth()` hook backed by Redux.
+
+Client CRUD state is consumed directly with `useSelector` and `useDispatch` against the `clients` slice.
 
 ---
 
 ## Extending Redux
 
-To add more global state later (e.g., notifications, theme, or cached data):
+To add more global state later (e.g., notifications, theme, departments, or other cached CRUD data):
 
 1. **Add a new slice** under `app/src/store/slices/`, e.g. `notificationsSlice.js`:
    - Define `initialState`, `name`, and `reducers` with `createSlice`.
@@ -394,7 +767,8 @@ This keeps one store, one place to look for global state, and one pattern for ho
 ## Summary
 
 - **Why Redux:** Auth (and potentially other shared state) is needed in many parts of the app; Redux provides a single, predictable global store and makes it easy to extend.
+- **Why Redux for Clients:** The clients feature now uses Redux to centralize list/detail CRUD state and async behavior across multiple screens.
 - **Why Redux Toolkit:** Less boilerplate, clearer reducer code, and official best practices.
-- **How it’s implemented:** Auth slice for state and actions → store with persistence → Provider in main.jsx → useAuth hook for components → all auth consumers updated to import useAuth from the store. The app behaves the same as before, with auth now backed by Redux.
+- **How it’s implemented:** Auth slice for state and actions → clients slice for CRUD state and async thunks → store with both reducers → Provider in main.jsx → useAuth hook for auth consumers → direct `useSelector`/`useDispatch` usage for client CRUD pages.
 
 For more on Redux and Redux Toolkit, see the official docs: [Redux](https://redux.js.org/) and [Redux Toolkit](https://redux-toolkit.js.org/).
