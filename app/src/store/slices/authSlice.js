@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 const loadClientFromStorage = () => {
   try {
     const stored = localStorage.getItem('client');
+    console.log(localStorage.getItem('client'));
     return stored ? JSON.parse(stored) : null;
   } catch {
     return null;
