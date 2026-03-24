@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchDepartments, deleteDepartment, clearDepartmentError } from '../../../store/slices/departementSlice';
 import {
   Alert,
   Box,
@@ -18,46 +20,27 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { getDepartments, deleteDepartment } from '../services/departments.service';
 
 const DepartmentList = () => {
-  const [departments, setDepartments] = useState([]);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const dispatch = useDispatch();
+  const { items: departments, loading, deleting, error } = useSelector((state) => state.departments);
 
   useEffect(() => {
-    loadDep();
-  }, []);
+    dispatch(fetchDepartments());
+  }, [dispatch]);
 
-  const loadDep = async () => {
-    setLoading(true);
-    try {
-      const deps = await getDepartments();
-      if (Array.isArray(deps)) {
-        setDepartments(deps);
-        setError('');
-        return;
-      }
-      setDepartments([]);
-      setError(deps?.message || 'Failed to load departments.');
-    } catch {
-      setDepartments([]);
-      setError('Failed to load departments.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    dispatch(clearDepartmentError());
+  }, [dispatch]);
 
   const remove = async (id) => {
-    const response = await deleteDepartment(id);
-    if (response?.code || response?.message) {
-      setError(response?.message || 'Failed to delete department.');
+    try {
+      await dispatch(deleteDepartment(id)).unwrap();
       setConfirmDelete(null);
-      return;
+    } catch {
+      // Redux state already captures the error message.
     }
-    setConfirmDelete(null);
-    await loadDep();
   };
 
   return (
@@ -115,7 +98,7 @@ const DepartmentList = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDelete(null)}>Cancel</Button>
-          <Button onClick={() => remove(confirmDelete?.dep_id)} variant="contained" color="error">
+            <Button onClick={() => remove(confirmDelete?.dep_id)} variant="contained" color="error" disabled={deleting}>
             Delete
           </Button>
         </DialogActions>
