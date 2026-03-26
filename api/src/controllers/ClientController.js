@@ -1,4 +1,5 @@
 const ClientService = require('../services/ClientService');
+const { emitClientChanged } = require('../socket');
 
 class ClientController {
     static async getAll(req, res, next) {
@@ -22,6 +23,7 @@ class ClientController {
     static async create(req, res, next) {
         try {
             const client = await ClientService.create(req.body);
+            emitClientChanged('created', client);
             return res.status(201).json(client);
         } catch (err) {
             next(err);
@@ -31,6 +33,7 @@ class ClientController {
     static async update(req, res, next) {
         try {
             const client = await ClientService.update(req.params.id, req.body);
+            emitClientChanged('updated', client);
             return res.json(client);
         } catch (err) {
             next(err);
