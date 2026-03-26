@@ -38,7 +38,7 @@ const ClientList = () => {
   const [status, setStatus] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const dispatch = useDispatch();
-  const { items: clients, loading, deleting, error } = useSelector((state) => state.clients);
+  const { items: clients, loading, deleting, error, socketConnected } = useSelector((state) => state.clients);
 
   useEffect(() => {
     dispatch(fetchClients());
@@ -103,6 +103,12 @@ const ClientList = () => {
           {error}
         </Alert>
       )}
+
+      <Alert severity={socketConnected ? "success" : "warning"} sx={{ mb: 2 }}>
+        {socketConnected
+          ? "Live sync is connected. Client changes from other sessions will appear automatically."
+          : "Live sync is disconnected. Refresh if recent client changes do not appear yet."}
+      </Alert>
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>

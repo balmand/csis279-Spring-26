@@ -3,6 +3,7 @@ import { Container } from '@mui/material';
 import Layout from '../components/layout/Layout';
 import { routes } from './routes';
 import { useAuth } from '../store/hooks/useAuth';
+import ClientRealtimeSync from './ClientRealtimeSync';
 
 const authPaths = ['/login', '/register'];
 
@@ -11,6 +12,7 @@ function App() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      <ClientRealtimeSync />
       <Layout>
         <Routes>
           {client

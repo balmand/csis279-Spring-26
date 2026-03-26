@@ -83,8 +83,21 @@ const initialState = {
   currentClientLoading: false,
   saving: false,
   deleting: false,
+  socketConnected: false,
   error: '',
   currentClientError: '',
+};
+
+const upsertClient = (state, client) => {
+  const index = state.items.findIndex((item) => item.client_id === client.client_id);
+
+  if (index >= 0) {
+    state.items[index] = client;
+  } else {
+    state.items.push(client);
+  }
+
+  state.items.sort((a, b) => a.client_id - b.client_id);
 };
 
 const clientsSlice = createSlice({
@@ -97,6 +110,25 @@ const clientsSlice = createSlice({
     clearCurrentClient: (state) => {
       state.currentClient = null;
       state.currentClientError = '';
+    },
+    socketConnected: (state) => {
+      state.socketConnected = true;
+    },
+    socketDisconnected: (state) => {
+      state.socketConnected = false;
+    },
+    clientSynced: (state, action) => {
+      const client = action.payload;
+
+      if (!client?.client_id) {
+        return;
+      }
+
+      upsertClient(state, client);
+
+      if (state.currentClient?.client_id === client.client_id) {
+        state.currentClient = client;
+      }
     },
   },
   extraReducers: (builder) => {
@@ -134,17 +166,10 @@ const clientsSlice = createSlice({
       })
       .addCase(saveClient.fulfilled, (state, action) => {
         const savedClient = action.payload;
-        const index = state.items.findIndex((client) => client.client_id === savedClient.client_id);
 
         state.saving = false;
         state.currentClient = savedClient;
-
-        if (index >= 0) {
-          state.items[index] = savedClient;
-        } else {
-          state.items.push(savedClient);
-          state.items.sort((a, b) => a.client_id - b.client_id);
-        }
+        upsertClient(state, savedClient);
       })
       .addCase(saveClient.rejected, (state, action) => {
         state.saving = false;
@@ -165,5 +190,11 @@ const clientsSlice = createSlice({
   },
 });
 
-export const { clearClientError, clearCurrentClient } = clientsSlice.actions;
+export const {
+  clearClientError,
+  clearCurrentClient,
+  clientSynced,
+  socketConnected,
+  socketDisconnected,
+} = clientsSlice.actions;
 export default clientsSlice.reducer;
