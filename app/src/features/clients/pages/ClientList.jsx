@@ -24,10 +24,12 @@ import {
 } from "@mui/material";
 
 import { sendClientEmail } from "../services/client.service";
+import { SOCKET_ENABLED } from "../../../services/socket";
 import {
   clearClientError,
   deleteClient,
   fetchClients,
+  syncPendingChanges,
 } from "../../../store/slices/clientsSlice";
 
 const ClientList = () => {
@@ -38,7 +40,16 @@ const ClientList = () => {
   const [status, setStatus] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
   const dispatch = useDispatch();
-  const { items: clients, loading, deleting, error, socketConnected } = useSelector((state) => state.clients);
+  const {
+    items: clients,
+    loading,
+    deleting,
+    error,
+    socketConnected,
+    isOffline,
+    pendingChanges,
+    syncingPending,
+  } = useSelector((state) => state.clients);
 
   useEffect(() => {
     dispatch(fetchClients());
@@ -104,11 +115,38 @@ const ClientList = () => {
         </Alert>
       )}
 
-      <Alert severity={socketConnected ? "success" : "warning"} sx={{ mb: 2 }}>
-        {socketConnected
-          ? "Live sync is connected. Client changes from other sessions will appear automatically."
-          : "Live sync is disconnected. Refresh if recent client changes do not appear yet."}
-      </Alert>
+      {isOffline ? (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Offline mode is active. You can keep editing clients, and {pendingChanges.length} change
+          {pendingChanges.length === 1 ? "" : "s"} will sync automatically when you reconnect.
+        </Alert>
+      ) : pendingChanges.length > 0 ? (
+        <Alert
+          severity="info"
+          sx={{ mb: 2 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              disabled={syncingPending}
+              onClick={() => dispatch(syncPendingChanges())}
+            >
+              {syncingPending ? "Syncing..." : "Sync now"}
+            </Button>
+          }
+        >
+          {pendingChanges.length} pending offline change{pendingChanges.length === 1 ? "" : "s"} waiting
+          to sync.
+        </Alert>
+      ) : null}
+
+      {SOCKET_ENABLED ? (
+        <Alert severity={socketConnected ? "success" : "warning"} sx={{ mb: 2 }}>
+          {socketConnected
+            ? "Live sync is connected. Client changes from other sessions will appear automatically."
+            : "Live sync is disconnected. Realtime updates will resume when the socket reconnects."}
+        </Alert>
+      ) : null}
 
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>

@@ -1,25 +1,34 @@
-import { api } from "../../../services/api";
-
-const buildQueryString = (filters = {}) => {
-    const params = new URLSearchParams();
-
-    Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-            params.append(key, value);
-        }
-    });
-
-    return params.toString();
-};
+import { requestGraphql } from "../../../services/api";
 
 export const getSalesDashboard = (filters = {}, clientId) => {
-    const queryString = buildQueryString(filters);
-    const endpoint = `/statistics/sales/dashboard${queryString ? `?${queryString}` : ''}`;
+    return requestGraphql(
+        `query GetSalesDashboard($clientId: Int!, $filters: SalesDashboardFiltersInput) {
+            salesDashboard(clientId: $clientId, filters: $filters)
+        }`,
+        {
+            variables: {
+                clientId: Number(clientId),
+                filters,
+            },
+            includeMeta: true,
+            dataPath: "salesDashboard",
+        }
+    ).then((response) => {
+        if (!response.ok) {
+            return response;
+        }
 
-    return api(endpoint, {
-        headers: {
-            'x-client-id': clientId,
-        },
-        includeMeta: true,
+        try {
+            return {
+                ...response,
+                data: response.data ? JSON.parse(response.data) : null,
+            };
+        } catch {
+            return {
+                ok: false,
+                status: response.status,
+                data: { message: "Failed to parse sales dashboard response." },
+            };
+        }
     });
 };

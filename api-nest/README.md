@@ -23,12 +23,29 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+`api-nest` is a standalone Nest GraphQL API with its own local `.env` file.
 
 ## Project setup
 
 ```bash
 $ npm install
+```
+
+Create your local env from the template:
+
+```bash
+$ cp .env.example .env
+```
+
+Default env values:
+
+```env
+PORT=3000
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=csis_279_spring_26_db
 ```
 
 ## Compile and run the project
@@ -43,6 +60,8 @@ $ npm run start:dev
 # production mode
 $ npm run start:prod
 ```
+
+The GraphQL endpoint is available at `http://localhost:3000/graphql` by default.
 
 ## Run tests
 

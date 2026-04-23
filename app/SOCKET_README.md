@@ -126,11 +126,16 @@ This slice still handles normal HTTP CRUD with async thunks, but it now also han
 Added state:
 
 - `socketConnected`
+- `isOffline`
+- `pendingChanges`
+- `syncingPending`
 
 Added reducers:
 
 - `socketConnected`
 - `socketDisconnected`
+- `browserOnline`
+- `browserOffline`
 - `clientSynced`
 
 The `clientSynced` reducer uses an `upsertClient` helper:
@@ -141,14 +146,33 @@ The `clientSynced` reducer uses an `upsertClient` helper:
 
 That means both local saves and remote socket updates use the same merge behavior.
 
+The slice now also supports offline editing:
+
+- when the browser is offline, `saveClient` queues the change instead of sending HTTP immediately
+- new offline clients receive a temporary negative `client_id`
+- edits to offline-created clients keep updating the same queued create request
+- when the connection returns, `syncPendingChanges` replays the queue in order
+- once a queued create succeeds, the temporary client is replaced with the real server record
+
 ### `app/src/features/clients/pages/ClientList.jsx`
 
 This page now reads `socketConnected` from Redux and shows a small status alert:
 
 - connected: live sync is active
 - disconnected: user is told that realtime updates may not appear yet
+- offline: user sees how many changes are waiting to sync
+- reconnecting: user can trigger a manual sync while pending changes exist
 
 This gives visible feedback that the socket connection is working.
+
+### `app/src/app/ClientRealtimeSync.jsx`
+
+This component now listens to both socket events and browser connectivity events:
+
+- browser `online` marks Redux as online and reconnects the socket
+- browser `offline` marks Redux as offline and disables live sync status
+- socket reconnect triggers queued change replay
+- incoming `client:changed` events still merge into Redux immediately
 
 ## End-to-end event flow
 

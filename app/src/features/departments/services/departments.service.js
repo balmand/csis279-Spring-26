@@ -1,24 +1,64 @@
-import {api} from "../../../services/api";
+import { requestGraphql } from "../../../services/api";
+
+const DEPARTMENT_FIELDS = `
+  dep_id
+  dep_name
+`;
 
 export const getDepartments = () => {
-    return api("/departments");
+    return requestGraphql(
+        `query GetDepartments {
+            departments {
+                ${DEPARTMENT_FIELDS}
+            }
+        }`,
+        { dataPath: "departments" }
+    );
 }
 
 export const getDepartment = (id) =>{
-   return api(`/departments/${id}`);
+   return requestGraphql(
+    `query GetDepartment($id: Int!) {
+      department(id: $id) {
+        ${DEPARTMENT_FIELDS}
+      }
+    }`,
+    {
+      variables: { id: Number(id) },
+      dataPath: "department",
+    }
+   );
 }
 
 export const saveDepartment = (data, id) =>{
-
-    return api(id ? `/departments/${id}` : `/departments`, {
-        method: id ? "PUT" : "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(data),
-    });
+    return requestGraphql(
+      `mutation SaveDepartment($input: DepartmentInput!, $id: Int) {
+        saveDepartment(input: $input, id: $id) {
+          ${DEPARTMENT_FIELDS}
+        }
+      }`,
+      {
+        variables: {
+          input: data,
+          id: id ? Number(id) : undefined,
+        },
+        dataPath: "saveDepartment",
+      }
+    );
 }
 
-export const deleteDepartment = (id) => {
-    return api(`/departments/${id}`, {
-        method: "DELETE",
-    });
+export const deleteDepartment = async (id) => {
+    const response = await requestGraphql(
+      `mutation DeleteDepartment($id: Int!) {
+        deleteDepartment(id: $id) {
+          success
+        }
+      }`,
+      {
+        variables: { id: Number(id) },
+        dataPath: "deleteDepartment",
+      }
+    );
+
+    return response?.code || response?.message ? response : null;
 }

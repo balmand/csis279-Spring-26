@@ -13,7 +13,14 @@ const ClientForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { currentClient, currentClientLoading, currentClientError, saving } = useSelector((state) => state.clients);
+  const {
+    currentClient,
+    currentClientLoading,
+    currentClientError,
+    saving,
+    isOffline,
+    pendingChanges,
+  } = useSelector((state) => state.clients);
 
   useEffect(() => {
     if (id) {
@@ -45,6 +52,13 @@ const ClientForm = () => {
       <Typography variant="h5" sx={{ mb: 2 }}>
         {id ? 'Edit' : 'Add'} Client
       </Typography>
+
+      {isOffline && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Offline mode is active. Saving will queue this client locally and sync it later.
+          {pendingChanges.length > 0 ? ` Pending changes: ${pendingChanges.length}.` : ''}
+        </Alert>
+      )}
 
       {currentClientLoading ? (
         <Stack alignItems="center" sx={{ py: 4 }}>
