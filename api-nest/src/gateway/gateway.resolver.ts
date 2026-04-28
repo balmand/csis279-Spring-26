@@ -20,7 +20,7 @@ import {
   SalesDashboardFiltersInput,
   SendEmailInput,
 } from './graphql.types';
-import { idText } from 'typescript';
+
 
 @Resolver()
 export class GatewayResolver {
@@ -183,27 +183,24 @@ export class GatewayResolver {
   feedback(@Args('id', { type: () => Int }) id: number) {
     return this.data.getFeedbackById(id);
   }
+
   @Query(() => [Feedback])
   feedbacks() {
     return this.data.getFeedbacks();
   }
 
- @Mutation(() => Feedback)
+  @Mutation(() => Feedback)
   saveFeedback(
-    @Args('input', { type: () =>  FeedbackInput}) input: FeedbackInput,
-
-  ) {
-    return this.data.saveFeedback(input);
-  }
-   @Mutation(() => Client)
-  updateFeedback(
     @Args('input', { type: () => FeedbackInput }) input: FeedbackInput,
     @Args('id', { type: () => Int, nullable: true }) id?: number,
   ) {
-    return this.data.updateFeedback(id, input);
+    return this.data.saveFeedback(input, id);
   }
 
-
-  
+  @Mutation(() => OperationResult)
+  async deleteFeedback(@Args('id', { type: () => Int }) id: number) {
+    await this.data.deleteFeedback(id);
+    return { success: true };
+  }
 }
 

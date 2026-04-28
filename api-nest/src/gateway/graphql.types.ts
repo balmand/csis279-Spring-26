@@ -237,25 +237,24 @@ export class SalesDashboardFiltersInput {
 }
 
 @ObjectType()
-export class Feedback 
-{
-  @Field(() => Int, {nullable: false})
+export class Feedback {
+  @Field(() => Int)
   id!: number;
+
   @Field()
   comment!: string;
-  @Field()
+
+  @Field(() => Int)
   @Min(0)
   @Max(5)
   rate!: number;
 }
 
 @InputType()
-export class FeedbackInput
-{
-  @Field()
-  id!: number;
+export class FeedbackInput {
   @Field()
   comment!: string;
-  @Field()
+
+  @Field(() => Int)
   rate!: number;
 }
