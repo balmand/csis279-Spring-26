@@ -76,6 +76,43 @@ export class AppDataService {
     }
   }
 
+
+
+  async saveFeedback(input: {comment: string, rate: number})
+  {
+    const result = await this.db.query('insert into feedback (comment, rate) Values($1, $2) RETURNING *', [input.comment, input.rate]);
+    return result.rows[0];
+  }
+
+  async updateFeedback(id: number, input: {comment: string, rate: number})
+  {
+    const result = await this.db.query('update feedback set comment = $1, rate = $2 where id = $3', [input.comment, input.rate, id]);
+    return result.rows[0];
+  }
+  async getFeedbackById(id: number)
+  {
+    const result = await this.db.query('select * from feedback where id = $1', [id]);
+     if (result.rowCount === 0) {
+      throw new NotFoundException(`feedback with ${id} not found`);
+    }
+    return result.rows[0];
+  }
+
+  async getFeedbacks()
+  {
+    const results = await this.db.query('select * from feedback');
+    return results.rows; 
+  }
+  async deleteFeedback(id: number)
+  {
+    const result = await this.db.query('delete from feedback where id = $1');
+    if (result.rowCount === 0) {
+      throw new NotFoundException(`feedback with ${id} not found`);
+    }
+  }
+
+
+
   async getDepartments() {
     const result = await this.db.query('SELECT * FROM departments ORDER BY dep_id ASC');
     return result.rows;
@@ -881,4 +918,6 @@ export class AppDataService {
       worstEmployee: sorted[0],
     };
   }
+
+
 }

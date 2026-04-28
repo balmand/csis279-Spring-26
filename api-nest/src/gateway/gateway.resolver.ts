@@ -8,6 +8,8 @@ import {
   DepartmentInput,
   Employee,
   EmployeeInput,
+  Feedback,
+  FeedbackInput,
   Item,
   ItemInput,
   LoginInput,
@@ -18,6 +20,7 @@ import {
   SalesDashboardFiltersInput,
   SendEmailInput,
 } from './graphql.types';
+import { idText } from 'typescript';
 
 @Resolver()
 export class GatewayResolver {
@@ -173,4 +176,34 @@ export class GatewayResolver {
   async login(@Args('input', { type: () => LoginInput }) input: LoginInput) {
     return this.data.login(input);
   }
+
+
+
+  @Query(() => Feedback)
+  feedback(@Args('id', { type: () => Int }) id: number) {
+    return this.data.getFeedbackById(id);
+  }
+  @Query(() => [Feedback])
+  feedbacks() {
+    return this.data.getFeedbacks();
+  }
+
+ @Mutation(() => Feedback)
+  saveFeedback(
+    @Args('input', { type: () =>  FeedbackInput}) input: FeedbackInput,
+
+  ) {
+    return this.data.saveFeedback(input);
+  }
+   @Mutation(() => Client)
+  updateFeedback(
+    @Args('input', { type: () => FeedbackInput }) input: FeedbackInput,
+    @Args('id', { type: () => Int, nullable: true }) id?: number,
+  ) {
+    return this.data.updateFeedback(id, input);
+  }
+
+
+  
 }
+

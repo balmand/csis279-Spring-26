@@ -1,15 +1,17 @@
 import { Field, Float, InputType, Int, ObjectType } from '@nestjs/graphql';
+import { Max, Min } from 'class-validator';
+
 
 @ObjectType()
 export class Client {
   @Field(() => Int)
-  client_id: number;
+  client_id!: number;
 
   @Field()
-  client_name: string;
+  client_name!: string;
 
   @Field()
-  client_email: string;
+  client_email!: string;
 
   @Field(() => String, { nullable: true })
   client_dob?: string | null;
@@ -21,25 +23,25 @@ export class Client {
 @ObjectType()
 export class Department {
   @Field(() => Int)
-  dep_id: number;
+  dep_id!: number;
 
   @Field()
-  dep_name: string;
+  dep_name!: string;
 }
 
 @ObjectType()
 export class Employee {
   @Field(() => Int)
-  employee_id: number;
+  employee_id!: number;
 
   @Field()
-  employee_name: string;
+  employee_name!: string;
 
   @Field()
-  employee_email: string;
+  employee_email!: string;
 
   @Field()
-  employee_role: string;
+  employee_role!: string;
 
   @Field(() => String, { nullable: true })
   employee_dob?: string | null;
@@ -51,19 +53,19 @@ export class Employee {
 @ObjectType()
 export class Item {
   @Field(() => Int)
-  item_id: number;
+  item_id!: number;
 
   @Field()
-  item_name: string;
+  item_name!: string;
 
   @Field()
-  item_sku: string;
+  item_sku!: string;
 
   @Field(() => Float)
-  unit_price: number;
+  unit_price!: number;
 
   @Field(() => Int)
-  stock_quantity: number;
+  stock_quantity!: number;
 
   @Field(() => String, { nullable: true })
   category?: string | null;
@@ -72,7 +74,7 @@ export class Item {
 @ObjectType()
 export class Order {
   @Field(() => Int)
-  order_id: number;
+  order_id!: number;
 
   @Field(() => Int, { nullable: true })
   customer_id?: number | null;
@@ -90,25 +92,25 @@ export class Order {
 @ObjectType()
 export class OrderItem {
   @Field(() => Int)
-  order_item_id: number;
+  order_item_id!: number;
 
   @Field(() => Int)
-  order_id: number;
+  order_id!: number;
 
   @Field(() => Int)
-  item_id: number;
+  item_id!: number;
 
   @Field(() => Int)
-  quantity: number;
+  quantity!: number;
 
   @Field(() => Float)
-  unit_price: number;
+  unit_price!: number;
 }
 
 @ObjectType()
 export class OperationResult {
   @Field()
-  success: boolean;
+  success!: boolean;
 
   @Field(() => String, { nullable: true })
   message?: string | null;
@@ -117,97 +119,97 @@ export class OperationResult {
 @ObjectType()
 export class AuthPayload {
   @Field()
-  authenticated: boolean;
+  authenticated!: boolean;
 
   @Field(() => Client)
-  client: Client;
+  client!: Client;
 }
 
 @InputType()
 export class ClientInput {
   @Field()
-  name: string;
+  name!: string;
 
   @Field()
-  email: string;
+  email!: string;
 }
 
 @InputType()
 export class DepartmentInput {
   @Field()
-  name: string;
+  name!: string;
 }
 
 @InputType()
 export class EmployeeInput {
   @Field()
-  employee_name: string;
+  employee_name!: string;
 
   @Field()
-  employee_email: string;
+  employee_email!: string;
 
   @Field()
-  employee_role: string;
+  employee_role!: string;
 
   @Field()
-  employee_dob: string;
+  employee_dob!: string;
 
   @Field(() => Int)
-  employee_department: number;
+  employee_department!: number;
 }
 
 @InputType()
 export class ItemInput {
   @Field()
-  item_name: string;
+  item_name!: string;
 
   @Field()
-  item_sku: string;
+  item_sku!: string;
 
   @Field(() => Float)
-  unit_price: number;
+  unit_price!: number;
 
   @Field(() => Int)
-  stock_quantity: number;
+  stock_quantity!: number;
 }
 
 @InputType()
 export class LoginInput {
   @Field()
-  client_email: string;
+  client_email!: string;
 
   @Field()
-  password: string;
+  password!: string;
 }
 
 @InputType()
 export class RegisterInput {
   @Field()
-  client_name: string;
+  client_name!: string;
 
   @Field()
-  client_email: string;
+  client_email!: string;
 
   @Field()
-  client_dob: string;
+  client_dob!: string;
 
   @Field()
-  password: string;
+  password!: string;
 
   @Field()
-  role: string;
+  role!: string;
 }
 
 @InputType()
 export class SendEmailInput {
   @Field()
-  to: string;
+  to!: string;
 
   @Field()
-  subject: string;
+  subject!: string;
 
   @Field()
-  text: string;
+  text!: string;
 }
 
 @InputType()
@@ -232,4 +234,28 @@ export class SalesDashboardFiltersInput {
 
   @Field(() => Int, { nullable: true })
   lowSalesThreshold?: number;
+}
+
+@ObjectType()
+export class Feedback 
+{
+  @Field(() => Int, {nullable: false})
+  id!: number;
+  @Field()
+  comment!: string;
+  @Field()
+  @Min(0)
+  @Max(5)
+  rate!: number;
+}
+
+@InputType()
+export class FeedbackInput
+{
+  @Field()
+  id!: number;
+  @Field()
+  comment!: string;
+  @Field()
+  rate!: number;
 }
