@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../store/hooks/useAuth";
 
 const navLinks = [
+  
   { to: '/', label: 'Home' },
   { to: '/about', label: 'About' },
   { to: '/clients', label: 'Clients' },
@@ -10,6 +11,8 @@ const navLinks = [
   { to: '/items', label: 'Items' },
   { to: '/employees', label: 'Employees' },
   { to: '/orders', label: 'Orders' },
+  {to: '/feedback', label: 'Feedback'},
+  
 ];
 
 const NavBar = () => {

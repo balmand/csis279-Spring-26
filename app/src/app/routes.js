@@ -14,6 +14,8 @@ import OrdersList from "../features/orders/pages/OrdersList";
 import ItemsInOrder from "../features/orders/pages/ItemsInOrder";
 import ClientListOrders from "../features/orders/pages/ClientListOrders";
 import SalesStatisticsPage from "../features/statistics/pages/SalesStatisticsPage";
+import FeedbackList from "../features/feedback/pages/FeedbackList";
+import FeedbackForm from "../features/feedback/pages/FeedbackForm";
 
 export const routes = [
     {path: "/", element: Home},
@@ -36,4 +38,7 @@ export const routes = [
     {path: "/admin/statistics", element: SalesStatisticsPage},
     {path: "/login", element: Login},
     {path: "/register", element: Register},
+    { path: "/feedback", element: FeedbackList },
+    { path: "/feedback/new", element: FeedbackForm },
+    { path: "/feedback/:id/edit", element: FeedbackForm },
 ];
